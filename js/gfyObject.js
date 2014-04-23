@@ -234,6 +234,7 @@ var gfyObject = function (gfyElem) {
                 gfyFrameRate = gfyItem.frameRate;
                 if (document.createElement('video').canPlayType) {
                     createVidTag();
+                    setWrapper();
                     createTitle();
                     createOverlayCanvas();
                     // Can't grab the width/height until video loaded
@@ -304,7 +305,6 @@ var gfyObject = function (gfyElem) {
     function vidLoaded() {
         setSize();
         if (!ctrlBox) {
-            setWrapper();
             createCtrlBox();
         }
         if (!optAutoplay)
