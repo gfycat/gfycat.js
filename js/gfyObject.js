@@ -264,7 +264,7 @@ var gfyObject = function (gfyElem) {
     function loadJSONP(url, callback, context) {
         var unique = 0;
         // INIT
-        var name = "_jsonp_" + unique++;
+        var name = "_" + gfyId + "_" + unique++;
         if (url.match(/\?/)) url += "&callback=" + name;
         else url += "?callback=" + name;
 
