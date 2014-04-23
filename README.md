@@ -29,5 +29,14 @@ The key which the embed script looks for is **class="gfyitem"**.  The options ar
 * data-autoplay: whether or not to automatically start playback when the page loads (default: true)
 * data-expand: whether or not the video element should expand to fill the space of its container (default: false)  
      
-
+The files in this repository are broken down into two objects:  
   
+* **gfyCollection**: this object is called on page load --  gfyCollection.init().  Its function is to find every gfycat embed on the page and create a gfyObject for it.  
+* **gfyObject**:  a new one of these is created for each gfycat embed.  It contains all of the functions to generate the DOM and manipulate the video.  
+
+gfyCollection.init should be called on page load:  
+  
+    if(document.addEventListener)
+        document.addEventListener("DOMContentLoaded",gfyCollection.init,false);
+    else
+        document.attachEvent("onreadystatechange",gfyCollection.init);
