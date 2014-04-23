@@ -35,8 +35,11 @@ var gfyCollection = function () {
         elem_coll = byClass("gfyitem", document);
         for (var i = 0; i < elem_coll.length; i++) {
             var gfyObj = new gfyObject(elem_coll[i]);
-            gfyObj.init();
             collection.push(gfyObj);
+        }
+        // run init _after_ all are collected, because the init function deletes and recreates
+        for(var i = 0; i < collection.length; i++) {
+            collection[i].init();
         }
     }
 
