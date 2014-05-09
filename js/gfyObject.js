@@ -137,6 +137,7 @@ var gfyObject = function (gfyElem) {
         gfyRootElem.style.padding = 0;
         if (!optExpand) {
             gfyRootElem.style.display = 'inline-block';
+            gfyRootElem.style.overflow = 'hidden';
             gfyRootElem.style.boxSizing = 'border-box';
             gfyRootElem.style.MozBoxSizing = 'border-box';
             gfyRootElem.style.webkitBoxSizing = 'border-box';
