@@ -319,7 +319,7 @@ var gfyObject = function (gfyElem) {
         if (!ctrlBox) {
             createCtrlBox();
         }
-        if (!optAutoplay)
+        if (!optAutoplay && !isMobile)
             drawPlayOverlay();
     }
 
