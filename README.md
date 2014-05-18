@@ -19,7 +19,7 @@ Example(current file):
 
 Example: 
   
-    <div class="gfyitem" data-title=true data-autoplay=false data-controls=true data-expand=false data-id="BestYellowishElephantseal" />  
+    <div class="gfyitem" data-title=true data-autoplay=false data-controls=true data-expand=false data-id="BestYellowishElephantseal" ></div> 
     
 The key which the embed script looks for is **class="gfyitem"**.  The options are:  
   
