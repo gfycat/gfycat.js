@@ -273,8 +273,10 @@ var gfyObject = function (gfyElem) {
 
     }
 
+    // used to load ajax info for each gfycat on the page
+    // callback functions must be setup and uniquely named for each
     function loadJSONP(url, callback, context) {
-        var unique = 0;
+        var unique = Math.floor((Math.random()*10000000) + 1);
         // INIT
         var name = "_" + gfyId + "_" + unique++;
         if (url.match(/\?/)) url += "&callback=" + name;
