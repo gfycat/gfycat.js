@@ -238,7 +238,7 @@ var gfyObject = function (gfyElem) {
         gfyRootElem.parentNode.replaceChild(newElem, gfyRootElem);
         gfyRootElem = newElem;
         // call gfycat API to get info for this gfycat
-        loadJSONP("http://gfycat.com/cajax/get/" + gfyId, function (data) {
+        loadJSONP("https://gfycat.com/cajax/get/" + gfyId, function (data) {
             if (data) {
                 gfyItem = data.gfyItem;
                 gfyMp4Url = gfyItem.mp4Url;
