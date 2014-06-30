@@ -13,7 +13,7 @@ Usage:
 
 Example(current file):
   
-    <script type"text/javascript" src="http://test.gfycat.com/gfycat_test_may18.js"></script>
+    <script type"text/javascript" src="http://test.gfycat.com/gfycat_test_june25.js"></script>
 
 **Include an embed tag**
 
