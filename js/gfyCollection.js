@@ -31,14 +31,22 @@ var gfyCollection = function () {
     }
 
     function init() {
+        scan();
+    }
+
+    function scan() {
+        // this can be run multiple times, so we'll add to any existing gfycats
+        var last = collection.length;
         // find each gfycat on page and run its init
         elem_coll = byClass("gfyitem", document);
         for (var i = 0; i < elem_coll.length; i++) {
+            // don't need to worry about finding existing gfyitems - they are
+            // replaced by gfyObject
             var gfyObj = new gfyObject(elem_coll[i]);
             collection.push(gfyObj);
         }
         // run init _after_ all are collected, because the init function deletes and recreates
-        for(var i = 0; i < collection.length; i++) {
+        for (var i = last; i < collection.length; i++) {
             collection[i].init();
         }
     }
@@ -50,7 +58,8 @@ var gfyCollection = function () {
 
     return {
         init: init,
-        get: get
+        get: get,
+        scan: scan
     }
 
 }();
