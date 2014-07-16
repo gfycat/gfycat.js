@@ -31,10 +31,6 @@ var gfyObject = function (gfyElem) {
     var gfyWidth;
     var gfyHeight;
 
-    // if there are are multiple copies of the same gfycat ID on the page, this 
-    // counter helps us tell them apart
-    gfyObject.unique = 0;
-
 
     // Helper function -- only required because some browsers do not have get by class name
     function byClass(className, obj) {
@@ -280,8 +276,9 @@ var gfyObject = function (gfyElem) {
     // used to load ajax info for each gfycat on the page
     // callback functions must be setup and uniquely named for each
     function loadJSONP(url, callback, context) {
+        var unique = Math.floor((Math.random()*10000000) + 1);
         // INIT
-        var name = "_" + gfyId + "_" + gfyObject.unique++;
+        var name = "_" + gfyId + "_" + unique++;
         if (url.match(/\?/)) url += "&callback=" + name;
         else url += "?callback=" + name;
 
