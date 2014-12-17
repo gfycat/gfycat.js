@@ -3,7 +3,7 @@ gfycat.js
 
 Embed script to generate gfycat embeds on 3rd party websites.
 
-The intent of this javascript is to provide a simple self cotained file that web publishers can use to easily include gfycat embeds on their websites.  
+The intent of this javascript is to provide a simple self contained file that web publishers can use to easily include gfycat embeds on their websites.  
   
 By hosting it on github, users can request changes, contribute code, or fork a branch so that the embed process is adapted to actual real world needs.  
   
@@ -11,7 +11,7 @@ Usage:
   
 **Include the .js on your website**
 
-Example(current file):
+Example (current file):
   
     <script type"text/javascript" src="http://test.gfycat.com/gfycat_test_june25.js"></script>
 
