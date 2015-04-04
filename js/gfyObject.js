@@ -22,6 +22,7 @@ var gfyObject = function (gfyElem) {
     var vid;
     var gif;
     var overlayCanvas;
+    var playButton;
     var titleDiv;
     var isMobile;
     var isReverse = false;
@@ -64,8 +65,10 @@ var gfyObject = function (gfyElem) {
         titleDiv.style.fontSize = "20px";
         titleDiv.style.padding = "10px";
         titleDiv.innerHTML = gfyItem.title;
+        titleDiv.style.width = "100%";
         titleDiv.style.left = "0";
         titleDiv.style.top = "0";
+        titleDiv.style.boxSizing = "border-box";
         titleDiv.style.display = "none";
         gfyRootElem.appendChild(titleDiv);
     }
@@ -73,14 +76,34 @@ var gfyObject = function (gfyElem) {
     // overlayCanvas used to display a play button overlay if
     // video is not on "autoplay"
     function createOverlayCanvas() {
-        overlayCanvas = document.createElement('canvas');
+        overlayCanvas = document.createElement('div');
         overlayCanvas.style.position = "absolute";
+        overlayCanvas.style.width = "100%";
+        overlayCanvas.style.height = "99%";
         overlayCanvas.style.left = "0";
         overlayCanvas.style.top = "0";
+        overlayCanvas.style.boxSizing = "border-box";
+        overlayCanvas.style.pointer = "cursor";
+        overlayCanvas.style.textAlign = "center";
         overlayCanvas.onclick = pauseClick;
         overlayCanvas.onmouseout = gfyMouseOut;
         overlayCanvas.onmouseover = gfyMouseOver;
+        overlayCanvas.button = createPlayButton();
         gfyRootElem.appendChild(overlayCanvas);
+    }
+
+    function createPlayButton() {
+        playButton = document.createElement('div');
+        playButton.style.color = "#fff";
+        playButton.style.fontSize = "50px";
+        playButton.style.marginTop = "-25px";
+        playButton.style.position = "relative";
+        playButton.style.left = "1%";
+        playButton.style.top = "50%";
+        playButton.innerHTML = "&#9654;";
+        playButton.style.display = "none";
+        overlayCanvas.appendChild(playButton);
+        return playButton;
     }
 
     function createVidTag() {
@@ -310,48 +333,23 @@ var gfyObject = function (gfyElem) {
             gfyWidth = vid.videoWidth;
             gfyHeight = vid.videoHeight;
         }
-        overlayCanvas.width = gfyWidth;
-        overlayCanvas.height = gfyHeight;
-        // subtract padding of titleDiv
-        titleDiv.style.width = gfyWidth - 20 + 'px';
     }
 
     function vidLoaded() {
         setSize();
         if (!ctrlBox) {
             createCtrlBox();
-        }
-        if (!optAutoplay && !isMobile)
+        } else if (!optAutoplay && !isMobile) {
             drawPlayOverlay();
+        }
     }
 
     function clearPlayOverlay() {
-        var ctx = overlayCanvas.getContext("2d");
-        if (gfyWidth)
-            ctx.clearRect(0, 0, gfyWidth, gfyHeight);
+        overlayCanvas.button.style.display = "none";
     }
     // When video is set to load paused, or when no playback controls are present, show a large Play button overlay.
     function drawPlayOverlay() {
-        var ctx = overlayCanvas.getContext("2d");
-        ctx.clearRect(0, 0, gfyWidth, gfyHeight);
-        ctx.strokeStyle = "#ffffff";
-        ctx.fillStyle = "#ffffff";
-        ctx.lineWidth = 5;
-        var pWidth = 70;
-        var pHeight = 80;
-        var pRad = 5;
-        if (gfyHeight < 160 || gfyWidth < 200) {
-            pHeight = pHeight * gfyHeight / 240;
-            pWidth = pWidth * gfyHeight / 240;
-            pRad = 3;
-        }
-        drawPolygon(ctx, [
-            [gfyWidth / 2 - pWidth / 2, gfyHeight / 2 - pHeight / 2],
-            [gfyWidth / 2 + pWidth / 2, gfyHeight / 2],
-            [gfyWidth / 2 - pWidth / 2, gfyHeight / 2 + pHeight / 2]
-        ], pRad);
-        ctx.stroke();
-        ctx.fill();
+        overlayCanvas.button.style.display = "inline-block";
     }
 
     function drawPolygon(ctx, pts, radius) {
