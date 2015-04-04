@@ -2,18 +2,18 @@
  * gfyCollection:
  * Global object to be called on page load.
  * This runs through the page DOM for elements
- * with class "gfyitem" and attempts to convert
- * them to gfycat embeds by creating a new
- * gfyObject with the element.
- * Can also be used _after_ page load
- * by calling gfyCollection.get() to get
- * the collection of gfycat objects on the page
- * and re-initialize them or interact with them
- * as desired.
+ * with class "gfyitem" or class passed in and
+ *  attempts to convertthem to gfycat embeds by
+ *  creatinga new gfyObject with the element.
+ * Can also be used _after_ page load by calling
+ * gfyCollection.get() to get the collection
+ * of gfycat objects on the page and re-initialize
+ * them or interact with them as desired.
  */
 var gfyCollection = function () {
 
-    var collection = [];
+    var collection = [],
+        gfyClass = "gfyitem";
 
     // Helper function -- only required because some browsers do not have get by class name
     function byClass(className, obj) {
@@ -30,15 +30,17 @@ var gfyCollection = function () {
         }
     }
 
-    function init() {
-        scan();
+    function init(classname) {
+        classname = typeof classname==="string" ? classname : gfyClass;
+        scan(classname);
     }
 
-    function scan() {
+    function scan(classname) {
+        classname = typeof classname==="string" ? classname : gfyClass;
         // this can be run multiple times, so we'll add to any existing gfycats
         var last = collection.length;
         // find each gfycat on page and run its init
-        elem_coll = byClass("gfyitem", document);
+        elem_coll = byClass(classname, document);
         for (var i = 0; i < elem_coll.length; i++) {
             // don't need to worry about finding existing gfyitems - they are
             // replaced by gfyObject
