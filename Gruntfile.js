@@ -41,8 +41,7 @@ module.exports = function(grunt) {
     },
     'gh-pages': {
       options: {
-        base: 'demo',
-        push: false
+        base: 'demo'
       },
       src: '**/*'
     }
