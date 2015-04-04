@@ -96,7 +96,12 @@ var gfyObject = function (gfyElem) {
         playButton = document.createElement('div');
         playButton.style.color = "#fff";
         playButton.style.fontSize = "50px";
-        playButton.style.marginTop = "-25px";
+        playButton.style.lineHeight = "50px";
+        if(optCtrls) {
+            playButton.style.marginTop = "-40px";
+        } else {
+            playButton.style.marginTop = "-25px";
+        }
         playButton.style.position = "relative";
         playButton.style.left = "1%";
         playButton.style.top = "50%";
@@ -339,7 +344,8 @@ var gfyObject = function (gfyElem) {
         setSize();
         if (!ctrlBox) {
             createCtrlBox();
-        } else if (!optAutoplay && !isMobile) {
+        }
+        if(!optAutoplay && !isMobile) {
             drawPlayOverlay();
         }
     }
