@@ -44,7 +44,7 @@ var gfyCollection = function () {
         for (var i = 0; i < elem_coll.length; i++) {
             // don't need to worry about finding existing gfyitems - they are
             // replaced by gfyObject
-            var gfyObj = new gfyObject(elem_coll[i]);
+            var gfyObj = new gfyObject(elem_coll[i], i);
             collection.push(gfyObj);
         }
         // run init _after_ all are collected, because the init function deletes and recreates

@@ -63,6 +63,12 @@
     // or run gfyCollection.init() when ready
     	$(function() {
 			gfyCollection.init();
+			$(document).on('gfyLoaded', function(){
+				console.log('gfyLoaded');
+			});
+			$(document).one('gfyLoaded-0', function(){
+				console.log('gfyLoaded-0');
+			});
 		});
 	</script>
   </body>

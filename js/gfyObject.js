@@ -6,8 +6,9 @@
  * for interacting with its own gfycat video.
  */
 
-var gfyObject = function (gfyElem) {
+var gfyObject = function (gfyElem, gfyIndex) {
     var gfyRootElem = gfyElem;
+    var gfyElemIndex = gfyIndex;
     var gfyId;
     // Options are set by data- attributes on tag
     var optExpand; // Option: will video grow to fill space
@@ -372,6 +373,13 @@ var gfyObject = function (gfyElem) {
     }
 
     function vidLoaded() {
+        //emit custom events when loaded (general loaded, loaded + index)
+        var event = new Event('gfyLoaded'),
+            eventIndexed = new Event('gfyLoaded-'+gfyElemIndex);
+        // Dispatch the event.
+        document.dispatchEvent(event);
+        document.dispatchEvent(eventIndexed);
+
         setSize();
         if (!ctrlBox) {
             createCtrlBox();
