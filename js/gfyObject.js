@@ -14,6 +14,7 @@ var gfyObject = function (gfyElem) {
     var optTitle; // Option: display title on hover over
     var optCtrls; // Option: add controls to bottom right corner
     var optAutoplay = true; // Option: automatically play video when loaded
+    var optOptimize = true; // Option: autoplay video when scrolled into view
     // references to each html element
     var ctrlBox;
     var ctrlPausePlay;
@@ -114,7 +115,7 @@ var gfyObject = function (gfyElem) {
     function createVidTag() {
         vid = document.createElement('video');
         vid.className = 'gfyVid';
-        if (optAutoplay)
+        if (optAutoplay && !optOptimize)
             vid.autoplay = true;
         vid.loop = true;
         if(isMobile)
@@ -147,7 +148,11 @@ var gfyObject = function (gfyElem) {
     
     function createGifTag() {
         gif = document.createElement('img');
-        gif.src = gfyItem.gifUrl;
+        if(optOptimize) {
+            gif.src = '';
+        } else {
+            gif.src = gfyItem.gifUrl;            
+        }
         if (optExpand)
             gif.style.width = '100%';
         else
@@ -252,6 +257,10 @@ var gfyObject = function (gfyElem) {
             optCtrls = true;
         if (gfyRootElem.getAttribute('data-autoplay') == "false")
             optAutoplay = false;
+        if (gfyRootElem.getAttribute('data-optimize') == "false")
+            optOptimize = false;
+        if (gfyRootElem.getAttribute('data-gif') == "true")
+            isGifOnly = true;
         var newElem = document.createElement('div');
         attrib_src = gfyRootElem.attributes;
         attrib_dest = newElem.attributes;
@@ -272,7 +281,7 @@ var gfyObject = function (gfyElem) {
                 gfyMp4Url = gfyItem.mp4Url;
                 gfyWebmUrl = gfyItem.webmUrl;
                 gfyFrameRate = gfyItem.frameRate;
-                if (document.createElement('video').canPlayType) {
+                if (!isGifOnly && document.createElement('video').canPlayType) {
                     createVidTag();
                     setWrapper();
                     createTitle();
@@ -282,12 +291,13 @@ var gfyObject = function (gfyElem) {
                         vid.addEventListener("loadedmetadata", vidLoaded, false);
                     else
                         vid.attachEvent("onloadedmetadata", vidLoaded);
-                    if (optAutoplay)
+                    if (optAutoplay && !optOptimize)
                         vid.play();
                 } else {
                     isGifOnly = true;
                     createGifTag();
                     createTitle();
+                    checkScrollGif();
                     gif.onload = function () {
                         var ua = navigator.userAgent.toLowerCase();
                         if (ua.indexOf("msie") > -1)
@@ -340,6 +350,27 @@ var gfyObject = function (gfyElem) {
         }
     }
 
+    function checkScrollGif() {
+        $(gif)
+            .scrolledIntoView()
+            .on('scrolledin', function () {
+                console.log(gif, gif.src,gfyItem.gifUrl);
+                if(!gif.src || gif.src===window.location.href) {
+                    gif.src = gfyItem.gifUrl;                    
+                }
+            });
+    }
+
+    function checkScrollVideo() {
+        $(vid)
+            .scrolledIntoView()
+            .on('scrolledin', function () { 
+                play();
+            }).on('scrolledout', function () {
+                pause();
+            });
+    }
+
     function vidLoaded() {
         setSize();
         if (!ctrlBox) {
@@ -347,6 +378,11 @@ var gfyObject = function (gfyElem) {
         }
         if(!optAutoplay && !isMobile) {
             drawPlayOverlay();
+        }
+        if(optOptimize) {
+            // attach handler to only play when in view
+            // pretty much ignore autoplay
+            checkScrollVideo();
         }
     }
 
@@ -436,11 +472,9 @@ var gfyObject = function (gfyElem) {
 
     function pauseClick() {
         if (vid.paused) {
-            vid.play();
-            setCtrlsPlaying();
+            play();
         } else {
-            vid.pause();
-            setCtrlsPaused();
+            pause();
         }
     }
 
@@ -524,8 +558,25 @@ var gfyObject = function (gfyElem) {
         vid.play();
     }
 
+    function play() {
+        vid.play();
+        setCtrlsPlaying();
+    }
+
+    function pause() {
+        vid.pause();
+        setCtrlsPaused();
+    }
+
+    function getVideo() {
+        return vid;
+    }
+
     return {
         init: init,
-        refresh: refresh
+        refresh: refresh,
+        play: play,
+        pause: pause,
+        video: getVideo
     }
 }

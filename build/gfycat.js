@@ -81,6 +81,7 @@ var gfyObject = function (gfyElem) {
     var optTitle; // Option: display title on hover over
     var optCtrls; // Option: add controls to bottom right corner
     var optAutoplay = true; // Option: automatically play video when loaded
+    var optOptimize = true; // Option: autoplay video when scrolled into view
     // references to each html element
     var ctrlBox;
     var ctrlPausePlay;
@@ -181,7 +182,7 @@ var gfyObject = function (gfyElem) {
     function createVidTag() {
         vid = document.createElement('video');
         vid.className = 'gfyVid';
-        if (optAutoplay)
+        if (optAutoplay && !optOptimize)
             vid.autoplay = true;
         vid.loop = true;
         if(isMobile)
@@ -214,7 +215,11 @@ var gfyObject = function (gfyElem) {
     
     function createGifTag() {
         gif = document.createElement('img');
-        gif.src = gfyItem.gifUrl;
+        if(optOptimize) {
+            gif.src = '';
+        } else {
+            gif.src = gfyItem.gifUrl;            
+        }
         if (optExpand)
             gif.style.width = '100%';
         else
@@ -319,6 +324,10 @@ var gfyObject = function (gfyElem) {
             optCtrls = true;
         if (gfyRootElem.getAttribute('data-autoplay') == "false")
             optAutoplay = false;
+        if (gfyRootElem.getAttribute('data-optimize') == "false")
+            optOptimize = false;
+        if (gfyRootElem.getAttribute('data-gif') == "true")
+            isGifOnly = true;
         var newElem = document.createElement('div');
         attrib_src = gfyRootElem.attributes;
         attrib_dest = newElem.attributes;
@@ -339,7 +348,7 @@ var gfyObject = function (gfyElem) {
                 gfyMp4Url = gfyItem.mp4Url;
                 gfyWebmUrl = gfyItem.webmUrl;
                 gfyFrameRate = gfyItem.frameRate;
-                if (document.createElement('video').canPlayType) {
+                if (!isGifOnly && document.createElement('video').canPlayType) {
                     createVidTag();
                     setWrapper();
                     createTitle();
@@ -349,12 +358,13 @@ var gfyObject = function (gfyElem) {
                         vid.addEventListener("loadedmetadata", vidLoaded, false);
                     else
                         vid.attachEvent("onloadedmetadata", vidLoaded);
-                    if (optAutoplay)
+                    if (optAutoplay && !optOptimize)
                         vid.play();
                 } else {
                     isGifOnly = true;
                     createGifTag();
                     createTitle();
+                    checkScrollGif();
                     gif.onload = function () {
                         var ua = navigator.userAgent.toLowerCase();
                         if (ua.indexOf("msie") > -1)
@@ -407,6 +417,27 @@ var gfyObject = function (gfyElem) {
         }
     }
 
+    function checkScrollGif() {
+        $(gif)
+            .scrolledIntoView()
+            .on('scrolledin', function () {
+                console.log(gif, gif.src,gfyItem.gifUrl);
+                if(!gif.src || gif.src===window.location.href) {
+                    gif.src = gfyItem.gifUrl;                    
+                }
+            });
+    }
+
+    function checkScrollVideo() {
+        $(vid)
+            .scrolledIntoView()
+            .on('scrolledin', function () { 
+                play();
+            }).on('scrolledout', function () {
+                pause();
+            });
+    }
+
     function vidLoaded() {
         setSize();
         if (!ctrlBox) {
@@ -414,6 +445,11 @@ var gfyObject = function (gfyElem) {
         }
         if(!optAutoplay && !isMobile) {
             drawPlayOverlay();
+        }
+        if(optOptimize) {
+            // attach handler to only play when in view
+            // pretty much ignore autoplay
+            checkScrollVideo();
         }
     }
 
@@ -503,11 +539,9 @@ var gfyObject = function (gfyElem) {
 
     function pauseClick() {
         if (vid.paused) {
-            vid.play();
-            setCtrlsPlaying();
+            play();
         } else {
-            vid.pause();
-            setCtrlsPaused();
+            pause();
         }
     }
 
@@ -591,8 +625,184 @@ var gfyObject = function (gfyElem) {
         vid.play();
     }
 
+    function play() {
+        vid.play();
+        setCtrlsPlaying();
+    }
+
+    function pause() {
+        vid.pause();
+        setCtrlsPaused();
+    }
+
+    function getVideo() {
+        return vid;
+    }
+
     return {
         init: init,
-        refresh: refresh
+        refresh: refresh,
+        play: play,
+        pause: pause,
+        video: getVideo
     }
 }
+;//http://www.benknowscode.com/2013/07/detect-dom-element-scrolled-with-jquery.html
+//http://jsfiddle.net/bseth99/kej64/
+(function ($) {
+
+   var $window = $(window),
+       _watch = [],
+       _buffer;
+
+    //
+    // Debounce calls to "callback" routine so that multiple calls
+    // made to the event handler before the expiration of "delay" are
+    // coalesced into a single call to "callback". Also causes the
+    // wait period to be reset upon receipt of a call to the
+    // debounced routine.
+    // http://blogorama.nerdworks.in/javascriptfunctionthrottlingan/
+    /*function debounce(delay, callback) {
+        var timeout = null;
+        return function () {
+            //
+            // if a timeout has been registered before then
+            // cancel it so that we can setup a fresh timeout
+            //
+            if (timeout) {
+                clearTimeout(timeout);
+            }
+            var args = arguments;
+            timeout = setTimeout(function () {
+                callback.apply(null, args);
+                timeout = null;
+            }, delay);
+        };
+    }*/
+    
+    //
+    // Throttle calls to "callback" routine and ensure that it
+    // is not invoked any more often than "delay" milliseconds.
+    // http://blogorama.nerdworks.in/javascriptfunctionthrottlingan/
+    /*function throttle(delay, callback) {
+        var previousCall = new Date().getTime();
+        return function() {
+            var time = new Date().getTime();
+    
+            //
+            // if "delay" milliseconds have expired since
+            // the previous call then propagate this call to
+            // "callback"
+            //
+            if ((time - previousCall) >= delay) {
+                previousCall = time;
+                callback.apply(null, arguments);
+            }
+        };
+    }*/
+
+   function test($el) {
+      var docViewTop = $window.scrollTop(),
+          docViewBottom = docViewTop + $window.height(),
+          elemTop = $el.offset().top,
+          elemBottom = elemTop + $el.height();
+
+      return ((elemBottom >= docViewTop) && (elemTop <= docViewBottom)
+                && (elemBottom <= docViewBottom) &&  (elemTop >= docViewTop) );
+   }
+
+   $window.on('scroll', function ( e ) {
+
+         if ( !_buffer ) {
+
+            _buffer = setTimeout(function () {
+
+               checkInView( e );
+
+               _buffer = null;
+
+            }, 300);
+         }
+
+      });
+
+   function checkInView( e ) {
+
+      $.each(_watch, function () {
+
+         if ( test( this.element ) ) {
+
+            if ( !this.invp ) {
+               this.invp = true;
+               if ( this.options.scrolledin ) 
+                   this.options.scrolledin.call( this.element, e );
+                
+               this.element.trigger( 'scrolledin', e );
+            }
+         } else if ( this.invp ) {
+            this.invp = false;
+            if ( this.options.scrolledout ) 
+                this.options.scrolledout.call( this.element, e );
+             
+            this.element.trigger( 'scrolledout', e );
+         }
+      });
+   }
+
+   function monitor( element, options ) {
+      var item = { element: element, options: options, invp: false };
+      _watch.push(item);
+      return item;
+   }
+
+   function unmonitor( item ) {
+      for ( var i=0;i<_watch.length;i++ ) {
+         if ( _watch[i] === item ) {
+            _watch.splice( i, 1 );
+            item.element = null;
+            break;
+         }
+      }
+      //console.log( _watch );
+   }
+
+   var pluginName = 'scrolledIntoView',
+       settings = {
+         scrolledin: null,
+         scrolledout: null
+       }
+
+
+   $.fn[pluginName] = function( options ) {
+
+         var options = $.extend({}, settings, options);
+
+         this.each( function () {
+
+               var $el = $(this),
+                   instance = $.data( this, pluginName );
+
+               if ( instance ) {
+                  instance.options = options;
+               } else {
+                  $.data( this, pluginName, monitor( $el, options ) );
+                  $el.on( 'remove', $.proxy( function () {
+
+                        $.removeData(this, pluginName);
+                        unmonitor( instance );
+
+                     }, this ) );
+               }
+            });
+
+        //$window.on('scroll resize', throttle(250, checkInView));
+
+        window.setTimeout(function(){
+          $(window).trigger('scroll');
+        },1000);
+
+         return this;
+      }
+
+
+})(jQuery);

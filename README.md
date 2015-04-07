@@ -9,11 +9,14 @@ By hosting it on github, users can request changes, contribute code, or fork a b
 
 ## Usage
   
-**Include the .js on your website**
+**Include the .js on your website** Requires jquery for optimization.
 
 Example (current file):
   
-    `<script type"text/javascript" src="build/gyfcat.min.js"></script>`
+```
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type"text/javascript" src="build/gyfcat.min.js"></script>
+```
 
 **Include an embed tag**
 
@@ -30,6 +33,8 @@ The deafult key  the embed script looks for is **class="gfyitem"**, or the class
 * data-controls: whether or not to include controls for pause/speed/etc (default: false)
 * data-autoplay: whether or not to automatically start playback when the page loads (default: true)
 * data-expand: whether or not the video element should expand to fill the space of its container (default: false). Element will shrink to fit its container still when false, but will not expand beyond the file's original size.
+* data-optimize: only plays videos when they're in view and lazy loads gifs (default: true)
+* data-gif: load gif and not video (default: false)
 
 ### Initialize
 
@@ -54,7 +59,11 @@ The source files are broken down into two objects:
 * **gfyCollection**: this object is called on page load --  gfyCollection.init().  Its function is to find every gfycat embed on the page and create a gfyObject for it.  
 * **gfyObject**:  a new one of these is created for each gfycat embed.  It contains all of the functions to generate the DOM and manipulate the video.
 
-To compile the script, run `grunt build`, to update the demo scripts run `grunt demo`, and to publish the demo to github pages run `grunt publish`. (`npm install` to setup Grunt before first use.)  
+To compile the script, run `grunt build`, to update the demo scripts run `grunt demo`, and to publish the demo to github pages run `grunt publish`. (`npm install` to setup Grunt before first use.)
+
+### Remove jQuery
+
+To remove optimization and allow use without jquery, remove `isInViewport.js` from `js/` and remove `checkScrollGif()` and `checkScrollVideo()` as well as all references to them. Warning: Including multiple, playing videos on a page creates a signficant load on the user's computer.
 
 ## Alternate method of embedding
 
