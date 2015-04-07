@@ -441,11 +441,16 @@ var gfyObject = function (gfyElem, gfyIndex) {
 
     function vidLoaded() {
         //emit custom events when loaded (general loaded, loaded + index)
-        var event = new Event('gfyLoaded'),
-            eventIndexed = new Event('gfyLoaded-'+gfyElemIndex);
+        //var event = document.createEvent("gfyLoaded"),
+        //    eventIndexed = document.createEvent("gfyLoaded-"+gfyElemIndex);
+        //var event = new Event("gfyLoaded"),
+        //    eventIndexed = new Event("gfyLoaded-"+gfyElemIndex);
         // Dispatch the event.
-        document.dispatchEvent(event);
-        document.dispatchEvent(eventIndexed);
+        //document.dispatchEvent(event);
+        //document.dispatchEvent(eventIndexed);
+
+        $(document).trigger('gfyLoaded');
+        $(document).trigger('gfyLoaded-0');
 
         setSize();
         if (!ctrlBox) {
