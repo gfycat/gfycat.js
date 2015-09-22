@@ -52,24 +52,30 @@
 	</div>
 	<a href="https://github.com/gfycat/gfycat.js"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
 
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	<script type"text/javascript" src="build/gfycat.js"></script>
 
 	<script type"text/javascript">
-	//if(document.addEventListener){
-    //    document.addEventListener("DOMContentLoaded",gfyCollection.init,false);
-    //} else
-    //    document.attachEvent("onreadystatechange",gfyCollection.init);
-    // or run gfyCollection.init() when ready
-    	$(function() {
-			gfyCollection.init();
-			$(document).on('gfyLoaded', function(){
+		if(document.addEventListener){
+	       document.addEventListener("DOMContentLoaded",gfyCollection.init,false);
+	    } else {
+	       document.attachEvent("onreadystatechange",gfyCollection.init);
+	    }
+	    // or run gfyCollection.init() when ready
+		if (window.addEventListener) {
+            document.addEventListener('gfyLoaded', function(){
+				console.log('gfyLoaded');
+			}, false);
+			document.addEventListener('gfyLoaded-0', function(){
+				console.log('gfyLoaded-0');
+			}, false);
+        } else if (window.attachEvent)  {
+            document.attachEvent('gfyLoaded', function(){
 				console.log('gfyLoaded');
 			});
-			$(document).one('gfyLoaded.0', function(){
-				console.log('gfyLoaded.0');
+			document.attachEvent('gfyLoaded-0', function(){
+				console.log('gfyLoaded-0');
 			});
-		});
+        }
 	</script>
   </body>
 </html>

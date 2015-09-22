@@ -65,7 +65,21 @@ var gfyCollection = function () {
     }
 
 }();
-;/*
+;//polyfill for custom events in IE 9
+(function () {
+  function CustomEvent ( event, params ) {
+    params = params || { bubbles: false, cancelable: false, detail: undefined };
+    var evt = document.createEvent( 'CustomEvent' );
+    evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+    return evt;
+   }
+
+  CustomEvent.prototype = window.Event.prototype;
+
+  window.CustomEvent = CustomEvent;
+})();
+
+/*
  * A new gfyObject is created for each
  * gfycat embed on the page.  This object
  * creates all video/control elements
@@ -100,6 +114,7 @@ var gfyObject = function (gfyElem, gfyIndex) {
     var gfyItem;
     var gfyWidth;
     var gfyHeight;
+    var inView = false;
 
 
     // Helper function -- only required because some browsers do not have get by class name
@@ -366,6 +381,7 @@ var gfyObject = function (gfyElem, gfyIndex) {
                     createGifTag();
                     createTitle();
                     checkScrollGif();
+                    watchElementInViewport(checkScrollGif);
                     gif.onload = function () {
                         var ua = navigator.userAgent.toLowerCase();
                         if (ua.indexOf("msie") > -1)
@@ -419,31 +435,66 @@ var gfyObject = function (gfyElem, gfyIndex) {
     }
 
     function checkScrollGif() {
-        $(gif)
-            .scrolledIntoView()
-            .on('scrolledin', function () {
-                console.log(gif, gif.src,gfyItem.gifUrl);
-                if(!gif.src || gif.src===window.location.href) {
-                    gif.src = gfyItem.gifUrl;                    
-                }
-            });
+        var checkInView = isElementInViewport(gif);
+        if(checkInView && !inView){
+            if(!gif.src || gif.src===window.location.href) {
+                gif.src = gfyItem.gifUrl;                    
+            }
+            inView = true;
+        }
     }
 
     function checkScrollVideo() {
-        $(vid)
-            .scrolledIntoView()
-            .on('scrolledin', function () { 
-                play();
-            }).on('scrolledout', function () {
-                pause();
-            });
+        var checkInView = isElementInViewport(vid);
+        if(checkInView && !inView){
+            play();
+            inView = true;
+        } else if (!checkInView && inView) {
+            pause();
+            inView = false;
+        }
+    }
+
+    function isElementInViewport(el) {
+        var rect = el.getBoundingClientRect(),
+            threshold = 100;
+        return (
+            rect.top >= -threshold &&
+            rect.left >= -threshold &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)+threshold &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)+threshold
+        );
+    }
+
+    function watchElementInViewport(handler) {
+        if (window.addEventListener) {
+            addEventListener('DOMContentLoaded', handler, false); 
+            addEventListener('load', handler, false); 
+            addEventListener('scroll', handler, false); 
+            addEventListener('resize', handler, false); 
+        } else if (window.attachEvent)  {
+            attachEvent('onDOMContentLoaded', handler); // IE9+ :(
+            attachEvent('onload', handler);
+            attachEvent('onscroll', handler);
+            attachEvent('onresize', handler);
+        }
+    }
+
+    function triggerEvent(ev) {
+        if (window.CustomEvent) {
+            var event = new CustomEvent(ev);
+        } else {
+            var event = document.createEvent('CustomEvent');
+            event.initCustomEvent(ev, true, true);
+        }
+        document.dispatchEvent(event);
     }
 
     function vidLoaded() {
         //create and dispatch custom events when loaded (general loaded, loaded + index)
         //using jquery because couldn't figure it out to work on IE and Chome
-        $(document).trigger("gfyLoaded");
-        $(document).trigger("gfyLoaded-"+gfyElemIndex);
+        triggerEvent("gfyLoaded");
+        triggerEvent("gfyLoaded-"+gfyElemIndex);
 
         setSize();
         if (!ctrlBox) {
@@ -456,6 +507,7 @@ var gfyObject = function (gfyElem, gfyIndex) {
             // attach handler to only play when in view
             // pretty much ignore autoplay
             checkScrollVideo();
+            watchElementInViewport(checkScrollVideo);
         }
     }
 
@@ -653,162 +705,3 @@ var gfyObject = function (gfyElem, gfyIndex) {
         video: getVideo
     }
 }
-;//http://www.benknowscode.com/2013/07/detect-dom-element-scrolled-with-jquery.html
-//http://jsfiddle.net/bseth99/kej64/
-(function ($) {
-
-   var $window = $(window),
-       _watch = [],
-       _buffer;
-
-    //
-    // Debounce calls to "callback" routine so that multiple calls
-    // made to the event handler before the expiration of "delay" are
-    // coalesced into a single call to "callback". Also causes the
-    // wait period to be reset upon receipt of a call to the
-    // debounced routine.
-    // http://blogorama.nerdworks.in/javascriptfunctionthrottlingan/
-    /*function debounce(delay, callback) {
-        var timeout = null;
-        return function () {
-            //
-            // if a timeout has been registered before then
-            // cancel it so that we can setup a fresh timeout
-            //
-            if (timeout) {
-                clearTimeout(timeout);
-            }
-            var args = arguments;
-            timeout = setTimeout(function () {
-                callback.apply(null, args);
-                timeout = null;
-            }, delay);
-        };
-    }*/
-    
-    //
-    // Throttle calls to "callback" routine and ensure that it
-    // is not invoked any more often than "delay" milliseconds.
-    // http://blogorama.nerdworks.in/javascriptfunctionthrottlingan/
-    /*function throttle(delay, callback) {
-        var previousCall = new Date().getTime();
-        return function() {
-            var time = new Date().getTime();
-    
-            //
-            // if "delay" milliseconds have expired since
-            // the previous call then propagate this call to
-            // "callback"
-            //
-            if ((time - previousCall) >= delay) {
-                previousCall = time;
-                callback.apply(null, arguments);
-            }
-        };
-    }*/
-
-   function test($el) {
-      var docViewTop = $window.scrollTop(),
-          docViewBottom = docViewTop + $window.height(),
-          elemTop = $el.offset().top,
-          elemBottom = elemTop + $el.height();
-
-      return ((elemBottom >= docViewTop) && (elemTop <= docViewBottom)
-                && (elemBottom <= docViewBottom) &&  (elemTop >= docViewTop) );
-   }
-
-   $window.on('scroll', function ( e ) {
-
-         if ( !_buffer ) {
-
-            _buffer = setTimeout(function () {
-
-               checkInView( e );
-
-               _buffer = null;
-
-            }, 300);
-         }
-
-      });
-
-   function checkInView( e ) {
-
-      $.each(_watch, function () {
-
-         if ( test( this.element ) ) {
-
-            if ( !this.invp ) {
-               this.invp = true;
-               if ( this.options.scrolledin ) 
-                   this.options.scrolledin.call( this.element, e );
-                
-               this.element.trigger( 'scrolledin', e );
-            }
-         } else if ( this.invp ) {
-            this.invp = false;
-            if ( this.options.scrolledout ) 
-                this.options.scrolledout.call( this.element, e );
-             
-            this.element.trigger( 'scrolledout', e );
-         }
-      });
-   }
-
-   function monitor( element, options ) {
-      var item = { element: element, options: options, invp: false };
-      _watch.push(item);
-      return item;
-   }
-
-   function unmonitor( item ) {
-      for ( var i=0;i<_watch.length;i++ ) {
-         if ( _watch[i] === item ) {
-            _watch.splice( i, 1 );
-            item.element = null;
-            break;
-         }
-      }
-      //console.log( _watch );
-   }
-
-   var pluginName = 'scrolledIntoView',
-       settings = {
-         scrolledin: null,
-         scrolledout: null
-       }
-
-
-   $.fn[pluginName] = function( options ) {
-
-         var options = $.extend({}, settings, options);
-
-         this.each( function () {
-
-               var $el = $(this),
-                   instance = $.data( this, pluginName );
-
-               if ( instance ) {
-                  instance.options = options;
-               } else {
-                  $.data( this, pluginName, monitor( $el, options ) );
-                  $el.on( 'remove', $.proxy( function () {
-
-                        $.removeData(this, pluginName);
-                        unmonitor( instance );
-
-                     }, this ) );
-               }
-            });
-
-        //$window.on('scroll resize', throttle(250, checkInView));
-
-        window.setTimeout(function(){
-          $(window).trigger('scroll');
-        },1000);
-
-         return this;
-      }
-
-
-})(jQuery);

@@ -1,3 +1,17 @@
+//polyfill for custom events in IE 9
+(function () {
+  function CustomEvent ( event, params ) {
+    params = params || { bubbles: false, cancelable: false, detail: undefined };
+    var evt = document.createEvent( 'CustomEvent' );
+    evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+    return evt;
+   }
+
+  CustomEvent.prototype = window.Event.prototype;
+
+  window.CustomEvent = CustomEvent;
+})();
+
 /*
  * A new gfyObject is created for each
  * gfycat embed on the page.  This object
@@ -33,6 +47,7 @@ var gfyObject = function (gfyElem, gfyIndex) {
     var gfyItem;
     var gfyWidth;
     var gfyHeight;
+    var inView = false;
 
 
     // Helper function -- only required because some browsers do not have get by class name
@@ -299,6 +314,7 @@ var gfyObject = function (gfyElem, gfyIndex) {
                     createGifTag();
                     createTitle();
                     checkScrollGif();
+                    watchElementInViewport(checkScrollGif);
                     gif.onload = function () {
                         var ua = navigator.userAgent.toLowerCase();
                         if (ua.indexOf("msie") > -1)
@@ -352,31 +368,66 @@ var gfyObject = function (gfyElem, gfyIndex) {
     }
 
     function checkScrollGif() {
-        $(gif)
-            .scrolledIntoView()
-            .on('scrolledin', function () {
-                console.log(gif, gif.src,gfyItem.gifUrl);
-                if(!gif.src || gif.src===window.location.href) {
-                    gif.src = gfyItem.gifUrl;                    
-                }
-            });
+        var checkInView = isElementInViewport(gif);
+        if(checkInView && !inView){
+            if(!gif.src || gif.src===window.location.href) {
+                gif.src = gfyItem.gifUrl;                    
+            }
+            inView = true;
+        }
     }
 
     function checkScrollVideo() {
-        $(vid)
-            .scrolledIntoView()
-            .on('scrolledin', function () { 
-                play();
-            }).on('scrolledout', function () {
-                pause();
-            });
+        var checkInView = isElementInViewport(vid);
+        if(checkInView && !inView){
+            play();
+            inView = true;
+        } else if (!checkInView && inView) {
+            pause();
+            inView = false;
+        }
+    }
+
+    function isElementInViewport(el) {
+        var rect = el.getBoundingClientRect(),
+            threshold = 100;
+        return (
+            rect.top >= -threshold &&
+            rect.left >= -threshold &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)+threshold &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)+threshold
+        );
+    }
+
+    function watchElementInViewport(handler) {
+        if (window.addEventListener) {
+            addEventListener('DOMContentLoaded', handler, false); 
+            addEventListener('load', handler, false); 
+            addEventListener('scroll', handler, false); 
+            addEventListener('resize', handler, false); 
+        } else if (window.attachEvent)  {
+            attachEvent('onDOMContentLoaded', handler); // IE9+ :(
+            attachEvent('onload', handler);
+            attachEvent('onscroll', handler);
+            attachEvent('onresize', handler);
+        }
+    }
+
+    function triggerEvent(ev) {
+        if (window.CustomEvent) {
+            var event = new CustomEvent(ev);
+        } else {
+            var event = document.createEvent('CustomEvent');
+            event.initCustomEvent(ev, true, true);
+        }
+        document.dispatchEvent(event);
     }
 
     function vidLoaded() {
         //create and dispatch custom events when loaded (general loaded, loaded + index)
         //using jquery because couldn't figure it out to work on IE and Chome
-        $(document).trigger("gfyLoaded");
-        $(document).trigger("gfyLoaded-"+gfyElemIndex);
+        triggerEvent("gfyLoaded");
+        triggerEvent("gfyLoaded-"+gfyElemIndex);
 
         setSize();
         if (!ctrlBox) {
@@ -389,6 +440,7 @@ var gfyObject = function (gfyElem, gfyIndex) {
             // attach handler to only play when in view
             // pretty much ignore autoplay
             checkScrollVideo();
+            watchElementInViewport(checkScrollVideo);
         }
     }
 
