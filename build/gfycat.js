@@ -115,6 +115,7 @@ var gfyObject = function (gfyElem, gfyIndex) {
     var gfyWidth;
     var gfyHeight;
     var inView = false;
+    var autoplaying = false;
 
 
     // Helper function -- only required because some browsers do not have get by class name
@@ -446,10 +447,13 @@ var gfyObject = function (gfyElem, gfyIndex) {
 
     function checkScrollVideo() {
         var checkInView = isElementInViewport(vid);
-        if(checkInView && !inView){
-            play();
+        if(checkInView && !inView && autoplaying){
+            if(optAutoplay){
+                play();
+                autoplaying = true;
+            }
             inView = true;
-        } else if (!checkInView && inView) {
+        } else if (!checkInView && inView && autoplaying) {
             pause();
             inView = false;
         }
@@ -506,8 +510,24 @@ var gfyObject = function (gfyElem, gfyIndex) {
         if(optOptimize) {
             // attach handler to only play when in view
             // pretty much ignore autoplay
+            autoplaying = true;
             checkScrollVideo();
             watchElementInViewport(checkScrollVideo);
+
+            //handle pause via closing full screen on iOS
+            if (window.addEventListener) {
+                vid.addEventListener('webkitendfullscreen', function (e) {
+                    //pause();
+                    console.log('pause via close fullscreen, set autoplaying false');
+                    vid.pause();
+                    autoplaying = false;
+                });
+            } else if (window.attachEvent)  {
+                vid.attachEvent('webkitendfullscreen', function (e) {
+                    vid.pause();
+                    autoplaying = false;
+                });
+            }
         }
     }
 
@@ -598,8 +618,12 @@ var gfyObject = function (gfyElem, gfyIndex) {
     function pauseClick() {
         if (vid.paused) {
             play();
+            console.log('play, set autoplaying true');
+            autoplaying = true;
         } else {
             pause();
+            console.log('pause, set autoplaying false');
+            autoplaying = false;
         }
     }
 
