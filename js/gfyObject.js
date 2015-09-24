@@ -301,7 +301,8 @@ var gfyObject = function (gfyElem, gfyIndex) {
                 if (!isGifOnly && document.createElement('video').canPlayType) {
                     createVidTag();
                     setWrapper();
-                    createTitle();
+                    if(optTitle)
+                        createTitle();
                     createOverlayCanvas();
                     // Can't grab the width/height until video loaded
                     if (vid.addEventListener)
@@ -313,15 +314,18 @@ var gfyObject = function (gfyElem, gfyIndex) {
                 } else {
                     isGifOnly = true;
                     createGifTag();
-                    createTitle();
+                    if(optTitle)
+                        createTitle();
                     checkScrollGif();
                     watchElementInViewport(checkScrollGif);
                     gif.onload = function () {
-                        var ua = navigator.userAgent.toLowerCase();
-                        if (ua.indexOf("msie") > -1)
-                            titleDiv.style.width = gif.clientWidth + 'px';
-                        else
-                            titleDiv.style.width = gif.clientWidth - 20 + 'px';
+                        if(optTitle){
+                            var ua = navigator.userAgent.toLowerCase();
+                            if (ua.indexOf("msie") > -1)
+                                titleDiv.style.width = gif.clientWidth + 'px';
+                            else
+                                titleDiv.style.width = gif.clientWidth - 20 + 'px';
+                        }
                     }
                 }
             } else {}

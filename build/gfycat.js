@@ -368,7 +368,8 @@ var gfyObject = function (gfyElem, gfyIndex) {
                 if (!isGifOnly && document.createElement('video').canPlayType) {
                     createVidTag();
                     setWrapper();
-                    createTitle();
+                    if(optTitle)
+                        createTitle();
                     createOverlayCanvas();
                     // Can't grab the width/height until video loaded
                     if (vid.addEventListener)
@@ -380,15 +381,18 @@ var gfyObject = function (gfyElem, gfyIndex) {
                 } else {
                     isGifOnly = true;
                     createGifTag();
-                    createTitle();
+                    if(optTitle)
+                        createTitle();
                     checkScrollGif();
                     watchElementInViewport(checkScrollGif);
                     gif.onload = function () {
-                        var ua = navigator.userAgent.toLowerCase();
-                        if (ua.indexOf("msie") > -1)
-                            titleDiv.style.width = gif.clientWidth + 'px';
-                        else
-                            titleDiv.style.width = gif.clientWidth - 20 + 'px';
+                        if(optTitle){
+                            var ua = navigator.userAgent.toLowerCase();
+                            if (ua.indexOf("msie") > -1)
+                                titleDiv.style.width = gif.clientWidth + 'px';
+                            else
+                                titleDiv.style.width = gif.clientWidth - 20 + 'px';
+                        }
                     }
                 }
             } else {}
@@ -517,8 +521,6 @@ var gfyObject = function (gfyElem, gfyIndex) {
             //handle pause via closing full screen on iOS
             if (window.addEventListener) {
                 vid.addEventListener('webkitendfullscreen', function (e) {
-                    //pause();
-                    console.log('pause via close fullscreen, set autoplaying false');
                     vid.pause();
                     autoplaying = false;
                 });
@@ -618,11 +620,9 @@ var gfyObject = function (gfyElem, gfyIndex) {
     function pauseClick() {
         if (vid.paused) {
             play();
-            console.log('play, set autoplaying true');
             autoplaying = true;
         } else {
             pause();
-            console.log('pause, set autoplaying false');
             autoplaying = false;
         }
     }
