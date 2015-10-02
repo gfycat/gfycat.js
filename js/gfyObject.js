@@ -406,10 +406,10 @@ var gfyObject = function (gfyElem, gfyIndex) {
         //return true if half the element is in view in each direction
         var rect = el.getBoundingClientRect();
         return (
-            rect.top >= -rect.width/2 &&
-            rect.left >= -rect.width/2 &&
+            rect.top >= -rect.height/2 &&
             rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)+rect.height/2 &&
-            rect.right <= (window.innerWidth || document.documentElement.clientWidth)+rect.height/2
+            rect.left >= -rect.width/2 &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)+rect.width/2
         );
     }
 
