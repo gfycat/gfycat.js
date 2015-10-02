@@ -23,7 +23,7 @@ Example:
 
     `<div class="gfyitem" data-id="BestYellowishElephantseal" data-title=true data-controls=true data-autoplay=false data-expand=false ></div>`
 
-The deafult key  the embed script looks for is **class="gfyitem"**, or the class specificed in `gfyCollection.init('classname')`.
+The default key the embed script looks for is **class="gfyitem"**, or the class specificed in `gfyCollection.init('classname')`.
 
 ### Options 
   
@@ -32,17 +32,19 @@ The deafult key  the embed script looks for is **class="gfyitem"**, or the class
 * data-controls: whether or not to include controls for pause/speed/etc (default: false)
 * data-autoplay: whether or not to automatically start playback when the page loads (default: true)
 * data-expand: whether or not the video element should expand to fill the space of its container (default: false). Element will shrink to fit its container still when false, but will not expand beyond the file's original size.
-* data-optimize: only plays videos when they're in view and lazy loads gifs (default: true)
+* data-optimize: only plays videos when they're in view (~50% in) and lazy loads gifs (default: true)
 * data-gif: load gif and not video (default: false)
 
 ### Initialize
 
 `gfyCollection.init()` should be called on page load:  
-  
-    if(document.addEventListener)
-        document.addEventListener("DOMContentLoaded",gfyCollection.init,false);
-    else
-        document.attachEvent("onreadystatechange",gfyCollection.init);
+
+```javascript
+if(document.addEventListener)
+    document.addEventListener("DOMContentLoaded",gfyCollection.init,false);
+else
+    document.attachEvent("onreadystatechange",gfyCollection.init);
+```
 
 To scan for new gfycat Objects, run `gfyCollection.scan()`
 
@@ -71,7 +73,7 @@ There are several ways to use gif hosting from gfycat.
 * Use our embed code to embed a gfy object automatically. This method will choose video or gif format depending on the users capabilities, and we wrap a lot of other pixie dust around it too (shims for various unusual browser conditions to guarantee everyone gets the best experience).
 To turn this into a gfycat, you will need to include the following javascript snippet. Just paste it anywhere in your page.
 
-```
+```javascript
 <script>
  (function(d, t) {
     var g = d.createElement(t),
