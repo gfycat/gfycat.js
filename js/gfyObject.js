@@ -113,16 +113,22 @@ var gfyObject = function (gfyElem, gfyIndex) {
     function createPlayButton() {
         playButton = document.createElement('div');
         playButton.style.color = "#fff";
-        playButton.style.fontSize = "50px";
-        playButton.style.lineHeight = "50px";
+        playButton.style.fontSize = "40px";
+        playButton.style.lineHeight = "60px";
         if(optCtrls) {
             playButton.style.marginTop = "-40px";
         } else {
-            playButton.style.marginTop = "-25px";
+            playButton.style.marginTop = "-39px";
         }
         playButton.style.position = "relative";
-        playButton.style.left = "1%";
         playButton.style.top = "50%";
+        playButton.style.border = "1px solid rgba(100, 100, 100, .3)";
+        playButton.style.borderRadius = "50%";
+        playButton.style.width = "75px";
+        playButton.style.height = "75px";
+        playButton.style.padding = "9px 0 0 7px";
+        playButton.style.backgroundColor = "rgba(255,255,255,.3)";
+        playButton.style.textShadow = "#333 0px 0px 1px"
         playButton.innerHTML = "&#9654;";
         playButton.style.display = "none";
         overlayCanvas.appendChild(playButton);
@@ -397,13 +403,13 @@ var gfyObject = function (gfyElem, gfyIndex) {
     }
 
     function isElementInViewport(el) {
-        var rect = el.getBoundingClientRect(),
-            threshold = 100;
+        //return true if half the element is in view in each direction
+        var rect = el.getBoundingClientRect();
         return (
-            rect.top >= -threshold &&
-            rect.left >= -threshold &&
-            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)+threshold &&
-            rect.right <= (window.innerWidth || document.documentElement.clientWidth)+threshold
+            rect.top >= -rect.width/2 &&
+            rect.left >= -rect.width/2 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)+rect.height/2 &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)+rect.height/2
         );
     }
 
