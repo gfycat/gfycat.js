@@ -148,6 +148,7 @@ var gfyObject = function (gfyElem, gfyIndex) {
             vid.controls = false;
         vid.style.width = '100%';
         vid.style.height = 'auto';
+        vid.setAttribute('muted', 'muted');
         // poster url gfyName is case sensitive
         vid.setAttribute('poster', 'https://thumbs.gfycat.com/' + gfyItem.gfyName + '-poster.jpg');
         source2 = document.createElement('source');
@@ -156,7 +157,12 @@ var gfyObject = function (gfyElem, gfyIndex) {
         source2.className = "webmsource";
         vid.appendChild(source2);
         source = document.createElement('source');
-        source.src = gfyMp4Url;
+        if(isMobile)
+            source.src = gfyMp4Url.replace(/(:\/\/)\w+(\.gfycat\.com)/g, "$1thumbs$2").replace(".mp4", "-mobile.mp4");
+        else {
+            source.src = gfyMp4Url;
+            vid.setAttribute('preload', 'metadata');
+        }
         source.type = 'video/mp4';
         source.className = "mp4source";
         vid.appendChild(source);
