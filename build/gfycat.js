@@ -191,6 +191,7 @@ var gfyObject = function (gfyElem, gfyIndex) {
         playButton.style.top = "50%";
         playButton.style.border = "1px solid rgba(100, 100, 100, .3)";
         playButton.style.borderRadius = "50%";
+        playButton.style.boxSizing = "border-box";
         playButton.style.width = "75px";
         playButton.style.height = "75px";
         playButton.style.padding = "9px 0 0 7px";
