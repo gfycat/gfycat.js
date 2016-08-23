@@ -60,7 +60,7 @@ var gfyCollection = function () {
         init: init,
         get: get,
         scan: scan
-    }
+    };
 
 }();
 

@@ -16,7 +16,9 @@ gulp.task('build', function() {
 
 gulp.task('lint', function() {
     return gulp.src('web/js/*.js')
-      .pipe(jshint({}))
+      .pipe(jshint({
+        shadow: true // suppresses warnings about variable shadowing
+      }))
       .pipe(jshint.reporter(stylish))
       .pipe(jshint.reporter('fail'));
 });
