@@ -63,3 +63,8 @@ var gfyCollection = function () {
     }
 
 }();
+
+if(document.addEventListener)
+    document.addEventListener("DOMContentLoaded",gfyCollection.init,false);
+else
+    document.attachEvent("onreadystatechange",gfyCollection.init);
