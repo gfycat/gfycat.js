@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Gfycat.js embed demo</title>
+
+    <!-- Bootstrap -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
+	<style>
+		.row img {
+			width: 100%;
+		}
+	</style>
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+  	<div class="container-fluid">
+  		<div class="row">
+  			<div class="col-xs-12">
+				<h1>Gyfcat.js embed demo</h1>
+				<p><a href="https://github.com/gfycat/gfycat.js">Github</a> &bull; <a href="	http://gfycat.com/about">About Gfycat</a></p>
+				<hr>
+			</div>
+			<div class="col-xs-6">
+				<div class="well">All videos are wrapped inside a 50% width container to demo responsiveness.</div>
+				<h3>Autoplay, no title, no controls, no expand (closest to a gif)</h3>
+				<div class="gfyitem" data-title=false data-autoplay=true data-controls=false data-expand=false data-id="BarePiercingAntelope"></div>
+				<pre><code>&lt;div class="gfyitem" data-title=false data-autoplay=true data-controls=false data-expand=false data-id="AlertSpicyBlueandgoldmackaw">&lt;/div></code></pre>
+				<hr>
+				<h3>Autoplay, title, controls, no expand</h3>
+				<div class="gfyitem" data-title=true data-autoplay=true data-controls=true data-expand=false data-id="NeatHighlevelAlligator"></div>
+				<pre><code>&lt;div class="gfyitem" data-title=true data-autoplay=true data-controls=true data-expand=false data-id="NeatHighlevelAlligator">&lt;/div></code></pre>
+				<hr>
+				<h3>No autoplay, no title, no controls, expand</h3>
+				<div class="gfyitem" data-title=false data-autoplay=false data-controls=false data-expand=true data-id="AlertSpicyBlueandgoldmackaw"></div>
+				<pre><code>&lt;div class="gfyitem" data-title=false data-autoplay=false data-controls=false data-expand=true data-id="AlertSpicyBlueandgoldmackaw">&lt;/div></code></pre>
+				<hr>
+				<h3>Load gif</h3>
+				<div class="gfyitem" data-gif=true data-id="DisguisedHighIriomotecat"></div>
+				<pre><code>&lt;div class="gfyitem" data-gif=true data-id="DisguisedHighIriomotecat">&lt;/div></code></pre>
+				
+			</div>
+		</div>
+	</div>
+	<a href="https://github.com/gfycat/gfycat.js"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+
+	<script type"text/javascript" src="build/gfycat.js"></script>
+
+	<script type"text/javascript">
+		if(document.addEventListener){
+	       document.addEventListener("DOMContentLoaded",gfyCollection.init,false);
+	    } else {
+	       document.attachEvent("onreadystatechange",gfyCollection.init);
+	    }
+	    // or run gfyCollection.init() when ready
+		if (window.addEventListener) {
+            document.addEventListener('gfyLoaded', function(){
+				console.log('gfyLoaded');
+			}, false);
+			document.addEventListener('gfyLoaded-0', function(){
+				console.log('gfyLoaded-0');
+			}, false);
+        } else if (window.attachEvent)  {
+            document.attachEvent('gfyLoaded', function(){
+				console.log('gfyLoaded');
+			});
+			document.attachEvent('gfyLoaded-0', function(){
+				console.log('gfyLoaded-0');
+			});
+        }
+	</script>
+  </body>
+</html>
