@@ -21,7 +21,8 @@ var gfyObject = function (gfyElem) {
     var ctrlFaster;
     var vid;
     var gif;
-    var overlayCanvas;
+    var overlay;
+    var playButton;
     var titleDiv;
     var isMobile;
     var isReverse = false;
@@ -70,17 +71,50 @@ var gfyObject = function (gfyElem) {
         gfyRootElem.appendChild(titleDiv);
     }
 
-    // overlayCanvas used to display a play button overlay if
+    // overlay used to display a play button overlay if
     // video is not on "autoplay"
-    function createOverlayCanvas() {
-        overlayCanvas = document.createElement('canvas');
-        overlayCanvas.style.position = "absolute";
-        overlayCanvas.style.left = "0";
-        overlayCanvas.style.top = "0";
-        overlayCanvas.onclick = pauseClick;
-        overlayCanvas.onmouseout = gfyMouseOut;
-        overlayCanvas.onmouseover = gfyMouseOver;
-        gfyRootElem.appendChild(overlayCanvas);
+    function createOverlay() {
+        overlay = document.createElement('div');
+        overlay.style.position = "absolute";
+        overlay.style.width = "100%";
+        overlay.style.height = "99%";
+        overlay.style.left = "0";
+        overlay.style.top = "0";
+        overlay.style.boxSizing = "border-box";
+        overlay.style.cursor = "pointer";
+        overlay.style.textAlign = "center";
+        overlay.onclick = pauseClick;
+        overlay.onmouseout = gfyMouseOut;
+        overlay.onmouseover = gfyMouseOver;
+        overlay.button = createPlayButton();
+        gfyRootElem.appendChild(overlay);
+    }
+
+    function createPlayButton() {
+        playButton = document.createElement('div');
+        playButton.className = "play-button";
+        playButton.style.color = "#fff";
+        playButton.style.fontSize = "40px";
+        playButton.style.lineHeight = "60px";
+        if (optCtrls) {
+            playButton.style.marginTop = "-40px";
+        } else {
+            playButton.style.marginTop = "-39px";
+        }
+        playButton.style.position = "relative";
+        playButton.style.top = "50%";
+        playButton.style.border = "1px solid rgba(100, 100, 100, .3)";
+        playButton.style.borderRadius = "50%";
+        playButton.style.boxSizing = "border-box";
+        playButton.style.width = "75px";
+        playButton.style.height = "75px";
+        playButton.style.padding = "9px 0 0 7px";
+        playButton.style.backgroundColor = "rgba(255,255,255,.3)";
+        playButton.style.textShadow = "#333 0px 0px 1px";
+        playButton.innerHTML = "&#9654;";
+        playButton.style.display = "none";
+        overlay.appendChild(playButton);
+        return playButton;
     }
 
     function createVidTag() {
@@ -89,7 +123,7 @@ var gfyObject = function (gfyElem) {
         if (optAutoplay)
             vid.autoplay = true;
         vid.loop = true;
-        if(isMobile)
+        if (isMobile)
             vid.controls = true;
         else
             vid.controls = false;
@@ -247,8 +281,8 @@ var gfyObject = function (gfyElem) {
                 if (document.createElement('video').canPlayType) {
                     createVidTag();
                     setWrapper();
-                    createTitle();
-                    createOverlayCanvas();
+                    if (optTitle) createTitle();
+                    createOverlay();
                     // Can't grab the width/height until video loaded
                     if (vid.addEventListener)
                         vid.addEventListener("loadedmetadata", vidLoaded, false);
@@ -259,8 +293,9 @@ var gfyObject = function (gfyElem) {
                 } else {
                     isGifOnly = true;
                     createGifTag();
-                    createTitle();
+                    if (optTitle) createTitle();
                     gif.onload = function () {
+                        if (!optTitle) return;
                         var ua = navigator.userAgent.toLowerCase();
                         if (ua.indexOf("msie") > -1)
                             titleDiv.style.width = gif.clientWidth + 'px';
@@ -268,7 +303,7 @@ var gfyObject = function (gfyElem) {
                             titleDiv.style.width = gif.clientWidth - 20 + 'px';
                     };
                 }
-            } else {}
+            }
         });
 
     }
@@ -310,10 +345,6 @@ var gfyObject = function (gfyElem) {
             gfyWidth = vid.videoWidth;
             gfyHeight = vid.videoHeight;
         }
-        overlayCanvas.width = gfyWidth;
-        overlayCanvas.height = gfyHeight;
-        // subtract padding of titleDiv
-        titleDiv.style.width = gfyWidth - 20 + 'px';
     }
 
     function vidLoaded() {
@@ -321,91 +352,13 @@ var gfyObject = function (gfyElem) {
         if (!ctrlBox) {
             createCtrlBox();
         }
-        if (!optAutoplay && !isMobile)
-            drawPlayOverlay();
-    }
-
-    function clearPlayOverlay() {
-        var ctx = overlayCanvas.getContext("2d");
-        if (gfyWidth)
-            ctx.clearRect(0, 0, gfyWidth, gfyHeight);
-    }
-    // When video is set to load paused, or when no playback controls are present, show a large Play button overlay.
-    function drawPlayOverlay() {
-        var ctx = overlayCanvas.getContext("2d");
-        ctx.clearRect(0, 0, gfyWidth, gfyHeight);
-        ctx.strokeStyle = "#ffffff";
-        ctx.fillStyle = "#ffffff";
-        ctx.lineWidth = 5;
-        var pWidth = 70;
-        var pHeight = 80;
-        var pRad = 5;
-        if (gfyHeight < 160 || gfyWidth < 200) {
-            pHeight = pHeight * gfyHeight / 240;
-            pWidth = pWidth * gfyHeight / 240;
-            pRad = 3;
-        }
-        drawPolygon(ctx, [
-            [gfyWidth / 2 - pWidth / 2, gfyHeight / 2 - pHeight / 2],
-            [gfyWidth / 2 + pWidth / 2, gfyHeight / 2],
-            [gfyWidth / 2 - pWidth / 2, gfyHeight / 2 + pHeight / 2]
-        ], pRad);
-        ctx.stroke();
-        ctx.fill();
-    }
-
-    function drawPolygon(ctx, pts, radius) {
-        if (radius > 0) {
-            pts = getRoundedPoints(pts, radius);
-        }
-        var i, pt, len = pts.length;
-        ctx.beginPath();
-        for (i = 0; i < len; i++) {
-            pt = pts[i];
-            if (i === 0) {
-                ctx.moveTo(pt[0], pt[1]);
-            } else {
-                ctx.lineTo(pt[0], pt[1]);
-            }
-            if (radius > 0) {
-                ctx.quadraticCurveTo(pt[2], pt[3], pt[4], pt[5]);
-            }
-        }
-        ctx.closePath();
-    }
-
-    function getRoundedPoints(pts, radius) {
-        var i1, i2, i3, p1, p2, p3, prevPt, nextPt,
-            len = pts.length,
-            res = new Array(len);
-        for (i2 = 0; i2 < len; i2++) {
-            i1 = i2 - 1;
-            i3 = i2 + 1;
-            if (i1 < 0) {
-                i1 = len - 1;
-            }
-            if (i3 == len) {
-                i3 = 0;
-            }
-            p1 = pts[i1];
-            p2 = pts[i2];
-            p3 = pts[i3];
-            prevPt = getRoundedPoint(p1[0], p1[1], p2[0], p2[1], radius, false);
-            nextPt = getRoundedPoint(p2[0], p2[1], p3[0], p3[1], radius, true);
-            res[i2] = [prevPt[0], prevPt[1], p2[0], p2[1], nextPt[0], nextPt[1]];
-        }
-        return res;
-    }
-
-    function getRoundedPoint(x1, y1, x2, y2, radius, first) {
-        var total = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)),
-            idx = first ? radius / total : (total - radius) / total;
-        return [x1 + (idx * (x2 - x1)), y1 + (idx * (y2 - y1))];
+        if (!optAutoplay && !isMobile && !optCtrls)
+            showPlayButton();
     }
 
     function setCtrlsPaused() {
         if (!optCtrls) {
-            drawPlayOverlay();
+            showPlayButton();
             return;
         }
         ctrlPausePlay.style.backgroundPosition = '-71px 0';
@@ -418,9 +371,8 @@ var gfyObject = function (gfyElem) {
     }
 
     function setCtrlsPlaying() {
-        clearPlayOverlay();
-        if (!optCtrls)
-            return;
+        hidePlayButton();
+        if (!optCtrls) return;
         ctrlPausePlay.style.backgroundPosition = '-95px 0';
         ctrlFaster.style.backgroundPosition = '-20px 0';
         ctrlSlower.style.backgroundPosition = '-165px 0';
@@ -440,15 +392,21 @@ var gfyObject = function (gfyElem) {
         }
     }
 
+    function showPlayButton() {
+      overlay.button.style.display = "inline-block";
+    }
+
+    function hidePlayButton() {
+       overlay.button.style.display = "none";
+    }
+
     function gfyMouseOver() {
-        if (!optTitle || !gfyItem.title)
-            return;
+        if (!optTitle || !gfyItem.title) return;
         titleDiv.style.display = 'block';
     }
 
     function gfyMouseOut() {
-        if (!optTitle)
-            return;
+        if (!optTitle) return;
         titleDiv.style.display = 'none';
     }
 
