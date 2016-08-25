@@ -8,9 +8,11 @@ var gulp = require('gulp'),
     runSequence = require('run-sequence'),
     chalk = require('chalk');
 
+var isProductionBuild = false;
+
 gulp.task('build', function() {
   runSequence('lint', 'compress', function(err) {
-    console.log(err.plugin + chalk.red(' FAIL'));
+    if (err) console.log(err.plugin + chalk.red(' FAIL'));
   });
 });
 
@@ -23,14 +25,17 @@ gulp.task('lint', function() {
       .pipe(jshint.reporter('fail'));
 });
 
-gulp.task('compress', function (cb) {
-  pump([
-      gulp.src('web/js/*.js'),
-      concat('gfycat.min.js'),
-      uglify(),
-      gulp.dest('dist')
-    ]
-  );
+gulp.task('compress', function () {
+  gulp.src('web/js/*.js')
+    .pipe(concat('gfycat.js'))
+    .pipe(gulp.dest('dist'));
+
+  if (isProductionBuild) {
+    gulp.src('dist/gfycat.js')
+      .pipe(uglify())
+      .pipe(concat('gfycat.min.js'))
+      .pipe(gulp.dest('dist'));
+  }
 });
 
 gulp.task('watch', function() {

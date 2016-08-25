@@ -13,7 +13,8 @@
  */
 var gfyCollection = function () {
 
-    var collection = [];
+    var collection = [],
+        gfyClass = "gfyitem";
 
     // Helper function -- only required because some browsers do not have get by class name
     function byClass(className, obj) {
@@ -30,15 +31,18 @@ var gfyCollection = function () {
         }
     }
 
-    function init() {
-        scan();
+    function init(classname) {
+        classname = typeof classname==="string" ? classname : gfyClass;
+        scan(classname);
     }
 
-    function scan() {
+    function scan(classname) {
+        classname = typeof classname==="string" ? classname : gfyClass;
+
         // this can be run multiple times, so we'll add to any existing gfycats
         var last = collection.length;
         // find each gfycat on page and run its init
-        elem_coll = byClass("gfyitem", document);
+        elem_coll = byClass(classname, document);
         for (var i = 0; i < elem_coll.length; i++) {
             // don't need to worry about finding existing gfyitems - they are
             // replaced by gfyObject
@@ -64,7 +68,9 @@ var gfyCollection = function () {
 
 }();
 
-if(document.addEventListener)
-    document.addEventListener("DOMContentLoaded",gfyCollection.init,false);
+if (document.addEventListener)
+    document.addEventListener("DOMContentLoaded", function() {
+        gfyCollection.init();
+    }, false);
 else
-    document.attachEvent("onreadystatechange",gfyCollection.init);
+    document.attachEvent("onreadystatechange", gfyCollection.init);
