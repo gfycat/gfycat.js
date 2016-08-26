@@ -262,6 +262,8 @@ var gfyObject = function (gfyElem) {
             optAutoplay = false;
         if (gfyRootElem.getAttribute('data-optimize') == "false")
             optOptimize = false;
+        if (gfyRootElem.getAttribute('data-gif') == "true")
+            isGifOnly = true;
         var newElem = document.createElement('div');
         attrib_src = gfyRootElem.attributes;
         attrib_dest = newElem.attributes;
@@ -284,7 +286,7 @@ var gfyObject = function (gfyElem) {
                 gfyMp4Url = gfyItem.mp4Url;
                 gfyWebmUrl = gfyItem.webmUrl;
                 gfyFrameRate = gfyItem.frameRate;
-                if (document.createElement('video').canPlayType) {
+                if (!isGifOnly && document.createElement('video').canPlayType) {
                     createVidTag();
                     setWrapper();
                     createOverlay();
