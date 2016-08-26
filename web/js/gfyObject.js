@@ -9,11 +9,16 @@
 var gfyObject = function (gfyElem) {
     var gfyRootElem = gfyElem;
     var gfyId;
-    // Options are set by data- attributes on tag
-    var optExpand; // Option: will video grow to fill space
-    var optTitle; // Option: display title on hover over
-    var optCtrls; // Option: add controls to bottom right corner
-    var optAutoplay = true; // Option: automatically play video when loaded
+     // Option: will video grow to fill space
+    var optExpand;
+    // Option: display title on hover over
+    var optTitle;
+    // Option: add controls to bottom right corner
+    var optCtrls;
+     // Option: automatically play video when loaded
+    var optAutoplay = true;
+    // Option: play video only when in viewport and lazy load for .gif
+    var optOptimize = true;
     // references to each html element
     var ctrlBox;
     var ctrlPausePlay;
@@ -31,6 +36,7 @@ var gfyObject = function (gfyElem) {
     var gfyItem;
     var gfyWidth;
     var gfyHeight;
+    var inView = false;
 
 
     // Helper function -- only required because some browsers do not have get by class name
@@ -48,6 +54,7 @@ var gfyObject = function (gfyElem) {
     }
 
     function createTitle() {
+        if (!optTitle) return;
         titleDiv = document.createElement('div');
         titleDiv.style.position = "absolute";
         try {
@@ -65,8 +72,10 @@ var gfyObject = function (gfyElem) {
         titleDiv.style.fontSize = "20px";
         titleDiv.style.padding = "10px";
         titleDiv.innerHTML = gfyItem.title;
+        titleDiv.style.width = "100%";
         titleDiv.style.left = "0";
         titleDiv.style.top = "0";
+        titleDiv.style.boxSizing = "border-box";
         titleDiv.style.display = "none";
         gfyRootElem.appendChild(titleDiv);
     }
@@ -120,13 +129,9 @@ var gfyObject = function (gfyElem) {
     function createVidTag() {
         vid = document.createElement('video');
         vid.className = 'gfyVid';
-        if (optAutoplay)
-            vid.autoplay = true;
+        if (optAutoplay) vid.autoplay = true;
         vid.loop = true;
-        if (isMobile)
-            vid.controls = true;
-        else
-            vid.controls = false;
+        vid.controls = isMobile ? true : false;
         vid.style.width = '100%';
         vid.style.height = 'auto';
         // poster url gfyName is case sensitive
@@ -153,22 +158,19 @@ var gfyObject = function (gfyElem) {
 
     function createGifTag() {
         gif = document.createElement('img');
-        gif.src = gfyItem.gifUrl;
-        if (optExpand)
-            gif.style.width = '100%';
-        else
-            gif.style.maxWidth = gfyItem.width + 'px';
+        gif.src = optOptimize ? '' : gfyItem.gifUrl;
+        if (optExpand) {
+          gif.style.width = '100%';
+        } else {
+          gif.style.maxWidth = gfyItem.width + 'px';
+        }
         gif.style.height = 'auto';
         gif.onmouseout = gfyMouseOut;
         gif.onmouseover = gfyMouseOver;
         gfyRootElem.appendChild(gif);
-        gfyRootElem.style.position = "relative";
-        gfyRootElem.style.padding = 0;
     }
 
     function setWrapper() {
-        gfyRootElem.style.position = "relative";
-        gfyRootElem.style.padding = 0;
         if (!optExpand) {
             gfyRootElem.style.display = 'inline-block';
             gfyRootElem.style.overflow = 'hidden';
@@ -258,6 +260,8 @@ var gfyObject = function (gfyElem) {
             optCtrls = true;
         if (gfyRootElem.getAttribute('data-autoplay') == "false")
             optAutoplay = false;
+        if (gfyRootElem.getAttribute('data-optimize') == "false")
+            optOptimize = false;
         var newElem = document.createElement('div');
         attrib_src = gfyRootElem.attributes;
         attrib_dest = newElem.attributes;
@@ -266,11 +270,13 @@ var gfyObject = function (gfyElem) {
             var tst2 = tst.cloneNode();
             if (tst2.name == "style" && tst.value != 'null') {
                 attrib_dest.setNamedItem(tst2);
-            } else {}
+            }
             //attrib_dest.setNamedItem(attrib_src.item(i).cloneNode());
         }
         gfyRootElem.parentNode.replaceChild(newElem, gfyRootElem);
         gfyRootElem = newElem;
+        gfyRootElem.style.position = "relative";
+        gfyRootElem.style.padding = 0;
         // call gfycat API to get info for this gfycat
         loadJSONP("https://gfycat.com/cajax/get/" + gfyId, function (data) {
             if (data) {
@@ -281,31 +287,32 @@ var gfyObject = function (gfyElem) {
                 if (document.createElement('video').canPlayType) {
                     createVidTag();
                     setWrapper();
-                    if (optTitle) createTitle();
                     createOverlay();
                     // Can't grab the width/height until video loaded
-                    if (vid.addEventListener)
-                        vid.addEventListener("loadedmetadata", vidLoaded, false);
-                    else
-                        vid.attachEvent("onloadedmetadata", vidLoaded);
-                    if (optAutoplay)
-                        vid.play();
+                    if (vid.addEventListener) {
+                      vid.addEventListener("loadedmetadata", vidLoaded, false);
+                    } else {
+                      vid.attachEvent("onloadedmetadata", vidLoaded);
+                    }
+                    if (optAutoplay) play();
                 } else {
                     isGifOnly = true;
                     createGifTag();
-                    if (optTitle) createTitle();
+                    checkScrollGif();
+                    watchElementInViewport(checkScrollGif);
                     gif.onload = function () {
                         if (!optTitle) return;
                         var ua = navigator.userAgent.toLowerCase();
-                        if (ua.indexOf("msie") > -1)
+                        if (ua.indexOf("msie") > -1) {
                             titleDiv.style.width = gif.clientWidth + 'px';
-                        else
+                        } else {
                             titleDiv.style.width = gif.clientWidth - 20 + 'px';
+                        }
                     };
                 }
+                createTitle();
             }
         });
-
     }
 
     // used to load ajax info for each gfycat on the page
@@ -336,6 +343,56 @@ var gfyObject = function (gfyElem) {
         document.getElementsByTagName('head')[0].appendChild(script);
     }
 
+    function checkScrollVideo() {
+        var checkInView = isElementInViewport(vid);
+        if (checkInView && !inView) {
+            if (optAutoplay) play();
+            inView = true;
+        } else if (!checkInView && inView) {
+            pause();
+            inView = false;
+        }
+    }
+
+    function checkScrollGif() {
+        var checkInView = isElementInViewport(gif);
+        if (checkInView && !inView) {
+            if (!gif.src || gif.src === window.location.href) {
+                gif.src = gfyItem.gifUrl;
+            }
+            inView = true;
+        }
+    }
+
+    /**
+    * Returns 'true' if 50% of the element is in view in each direction
+    */
+    function isElementInViewport(el) {
+        var rect = el.getBoundingClientRect();
+        return (
+            rect.top >= -rect.height / 2 &&
+            rect.bottom <= (window.innerHeight ||
+                document.documentElement.clientHeight) + rect.height / 2 &&
+            rect.left >= -rect.width / 2 &&
+            rect.right <= (window.innerWidth ||
+                document.documentElement.clientWidth) + rect.width / 2
+        );
+    }
+
+    function watchElementInViewport(handler) {
+        if (window.addEventListener) {
+            addEventListener('DOMContentLoaded', handler, false);
+            addEventListener('load', handler, false);
+            addEventListener('scroll', handler, false);
+            addEventListener('resize', handler, false);
+        } else if (window.attachEvent)  {
+            attachEvent('onDOMContentLoaded', handler); // IE9+ :(
+            attachEvent('onload', handler);
+            attachEvent('onscroll', handler);
+            attachEvent('onresize', handler);
+        }
+    }
+
     function setSize() {
         gfyWidth = vid.offsetWidth;
         gfyHeight = vid.offsetHeight;
@@ -352,8 +409,24 @@ var gfyObject = function (gfyElem) {
         if (!ctrlBox) {
             createCtrlBox();
         }
-        if (!optAutoplay && !isMobile && !optCtrls)
-            showPlayButton();
+        if (!optAutoplay && !isMobile && !optCtrls) {
+          showPlayButton();
+        }
+        if (optOptimize) {
+          checkScrollVideo();
+          watchElementInViewport(checkScrollVideo);
+        }
+
+        //handle pause via closing full screen on iOS
+        if (window.addEventListener) {
+            vid.addEventListener('webkitendfullscreen', function () {
+                pause();
+            });
+        } else if (window.attachEvent)  {
+            vid.attachEvent('webkitendfullscreen', function () {
+                pause();
+            });
+        }
     }
 
     function setCtrlsPaused() {
@@ -384,12 +457,20 @@ var gfyObject = function (gfyElem) {
 
     function pauseClick() {
         if (vid.paused) {
-            vid.play();
-            setCtrlsPlaying();
+            play();
         } else {
-            vid.pause();
-            setCtrlsPaused();
+            pause();
         }
+    }
+
+    function play() {
+      vid.play();
+      setCtrlsPlaying();
+    }
+
+    function pause() {
+      vid.pause();
+      setCtrlsPaused();
     }
 
     function showPlayButton() {
@@ -438,7 +519,7 @@ var gfyObject = function (gfyElem) {
         }
         vid.playbackRate = 1;
         vid.load();
-        vid.play();
+        play();
     }
 
     function slower() {
@@ -460,10 +541,10 @@ var gfyObject = function (gfyElem) {
         if (window.opera) {
             var storeFunc = vid.onplay;
             vid.onplay = function () {
-                vid.pause();
+                pause();
                 vid.onplay = storeFunc;
             };
-            vid.play();
+            play();
         } else {
             vid.currentTime += (1 / gfyFrameRate);
         }
@@ -475,7 +556,7 @@ var gfyObject = function (gfyElem) {
 
     function refresh() {
         vid.load();
-        vid.play();
+        play();
     }
 
     return {
