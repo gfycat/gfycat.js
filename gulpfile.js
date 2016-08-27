@@ -6,7 +6,8 @@ var gulp = require('gulp'),
     rename = require('gulp-rename'), // TODO: delete ?
     concat = require('gulp-concat'),
     runSequence = require('run-sequence'),
-    chalk = require('chalk');
+    chalk = require('chalk'),
+    Server = require('karma').Server;
 
 var isProductionBuild = false;
 
@@ -16,8 +17,9 @@ gulp.task('build', function() {
   });
 });
 
+// TODO separate lint for code and tests
 gulp.task('lint', function() {
-    return gulp.src('web/js/*.js')
+    return gulp.src(['web/js/*.js', 'tests/**/*.js'])
       .pipe(jshint({
         shadow: true // suppresses warnings about variable shadowing
       }))
@@ -41,3 +43,28 @@ gulp.task('compress', function () {
 gulp.task('watch', function() {
   gulp.watch('web/js/*.js', ['build']);
 });
+
+gulp.task('watch-test', function() {
+  gulp.watch(['web/js/*.js', 'tests/**/*.js'], ['build']);
+});
+
+/**
+ * Run test once and exit
+ */
+gulp.task('test', function (done) {
+  new Server({
+    configFile: __dirname + '/karma.conf.js',
+    singleRun: true
+  }, done).start();
+});
+
+/**
+ * Watch for file changes and re-run tests on each change
+ */
+gulp.task('tdd', function (done) {
+  new Server({
+    configFile: __dirname + '/karma.conf.js'
+  }, done).start();
+});
+
+//gulp.task('default', ['tdd']);
