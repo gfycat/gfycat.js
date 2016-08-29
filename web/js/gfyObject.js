@@ -57,7 +57,7 @@ var gfyObject = function (gfyElem) {
     }
 
     function createTitle() {
-        if (!opt.title) return;
+        if (!opt.title || !gfyItem.title) return;
         titleDiv = document.createElement('div');
         titleDiv.className = "title";
         titleDiv.style.position = "absolute";
@@ -90,9 +90,14 @@ var gfyObject = function (gfyElem) {
     // video is not on "autoplay"
     function createOverlay() {
         overlay = document.createElement('div');
+        overlay.className = "overlay";
         overlay.style.position = "absolute";
         overlay.style.width = "100%";
-        overlay.style.height = "99%";
+        if (opt.controls) {
+          overlay.style.height = "calc(100% - 22px)";
+        } else {
+          overlay.style.height = "100%";
+        }
         overlay.style.left = "0";
         overlay.style.top = "0";
         overlay.style.boxSizing = "border-box";
@@ -195,66 +200,45 @@ var gfyObject = function (gfyElem) {
     function createCtrlBox() {
         if (!opt.controls || ctrlBox)
             return;
-        ctrlRow = document.createElement('div');
-        ctrlRow.style.position = 'relative';
         ctrlBox = document.createElement('div');
         ctrlBox.className = "controls";
-        ctrlPausePlay = document.createElement('img');
-        ctrlPausePlay.className = "gfyCtrlPause";
-        ctrlPausePlay.src = "https://assets.gfycat.com/img/placeholder.png";
-        ctrlPausePlay.style.backgroundImage = "url('https://assets.gfycat.com/img/gfycontrols.png')";
-        ctrlPausePlay.style.cssFloat = 'right';
-        ctrlPausePlay.style.marginRight = '5px';
-        ctrlPausePlay.style.width = '12px';
-        ctrlPausePlay.style.height = '12px';
-        ctrlPausePlay.style.borderStyle = 'none';
-        ctrlBox.appendChild(ctrlPausePlay);
-        ctrlReverse = document.createElement('img');
-        ctrlReverse.className = "gfyCtrlReverse";
-        ctrlReverse.src = "https://assets.gfycat.com/img/placeholder.png";
-        ctrlReverse.style.backgroundImage = "url('https://assets.gfycat.com/img/gfycontrols.png')";
-        ctrlReverse.style.cssFloat = 'right';
-        ctrlReverse.style.marginRight = '5px';
-        ctrlReverse.style.width = '14px';
-        ctrlReverse.style.height = '12px';
-        ctrlReverse.style.backgroundPosition = '-46px 0';
-        ctrlReverse.style.borderStyle = 'none';
-        ctrlSlower = document.createElement('img');
-        ctrlSlower.className = "gfyCtrlSlower";
-        ctrlSlower.src = "https://assets.gfycat.com/img/placeholder.png";
-        ctrlSlower.style.backgroundImage = "url('https://assets.gfycat.com/img/gfycontrols.png')";
-        ctrlSlower.style.marginRight = '5px';
-        ctrlSlower.style.width = '14px';
-        ctrlSlower.style.height = '12px';
-        ctrlSlower.style.cssFloat = 'right';
-        ctrlSlower.style.borderStyle = 'none';
-        ctrlFaster = document.createElement('img');
-        ctrlFaster.className = "gfyCtrlFaster";
-        ctrlFaster.src = "https://assets.gfycat.com/img/placeholder.png";
-        ctrlFaster.style.backgroundImage = "url('https://assets.gfycat.com/img/gfycontrols.png')";
-        ctrlFaster.style.width = '14px';
-        ctrlFaster.style.height = '12px';
-        ctrlFaster.style.cssFloat = 'right';
-        ctrlFaster.style.marginRight = '5px';
-        ctrlFaster.style.borderStyle = 'none';
-        if (vid.paused)
-            setCtrlsPaused();
-        else
-            setCtrlsPlaying();
         ctrlBox.style.position = 'relative';
-        ctrlBox.style.cssFloat = 'right';
-        ctrlBox.style.width = '100px';
+        ctrlBox.style.display = "flex";
+        ctrlBox.style.justifyContent = "flex-end";
         ctrlBox.style.padding = '5px';
         ctrlBox.style.margin = '0';
-        ctrlBox.setAttribute("id", "ctr" + gfyId);
+        ctrlBox.style.width = '100%';
+        ctrlBox.style.boxSizing = "border-box";
+
+        var ctrlIconsUrl = "https://assets.gfycat.com/img/gfycontrols.png";
+        var innerHTML = '<div class="gfyCtrlPause" style="display:inline-block;width:12px;height:12px;' +
+          'margin-right:5px;border-style:none;background-repeat:no-repeat;' +
+          'background-image:url(\'' + ctrlIconsUrl + '\');cursor:pointer;"></div>' +
+          '<div class="gfyCtrlReverse" style="display:inline-block;width:14px;height:12px;' +
+            'margin-right:5px;border-style:none;background-repeat:no-repeat;' +
+            'background-image:url(\'' + ctrlIconsUrl + '\');cursor:pointer;"></div>' +
+          '<div class="gfyCtrlSlower" style="display:inline-block;width:14px;height:12px;' +
+            'margin-right:5px;border-style:none;background-repeat:no-repeat;' +
+            'background-image:url(\'' + ctrlIconsUrl + '\');cursor:pointer;"></div>' +
+          '<div class="gfyCtrlFaster" style="display:inline-block;width:14px;height:12px;' +
+            'margin-right:5px;border-style:none;background-repeat:no-repeat;' +
+            'background-image:url(\'' + ctrlIconsUrl + '\');cursor:pointer;"></div>';
+
+        ctrlBox.innerHTML = innerHTML;
+        ctrlPausePlay = ctrlBox.getElementsByClassName('gfyCtrlPause')[0];
         ctrlPausePlay.onclick = pauseClick;
+        ctrlReverse = ctrlBox.getElementsByClassName('gfyCtrlReverse')[0];
         ctrlReverse.onclick = reverse;
-        ctrlBox.appendChild(ctrlFaster);
-        ctrlBox.appendChild(ctrlSlower);
-        ctrlBox.appendChild(ctrlReverse);
-        ctrlBox.appendChild(ctrlPausePlay);
-        ctrlRow.appendChild(ctrlBox);
-        gfyRootElem.appendChild(ctrlRow);
+        ctrlReverse.style.backgroundPosition = '-46px 0';
+        ctrlSlower = ctrlBox.getElementsByClassName('gfyCtrlSlower')[0];
+        ctrlFaster = ctrlBox.getElementsByClassName('gfyCtrlFaster')[0];
+
+        if (vid.paused) {
+            setCtrlsPaused();
+        } else {
+            setCtrlsPlaying();
+        }
+        gfyRootElem.appendChild(ctrlBox);
     }
 
     function deleteVidTag() {
@@ -282,6 +266,7 @@ var gfyObject = function (gfyElem) {
         gfyRootElem = newElem;
         gfyRootElem.style.position = "relative";
         gfyRootElem.style.padding = 0;
+        gfyRootElem.style.fontSize = 0;
         try {
           if (!gfyId) throw new Error("Gfyid is required!");
         } catch (err) {
@@ -322,7 +307,7 @@ var gfyObject = function (gfyElem) {
                     checkScrollGif();
                     watchElementInViewport(checkScrollGif);
                     gif.onload = function () {
-                        if (!opt.title) return;
+                        if (!opt.title || !gfyItem.title) return;
                         var ua = navigator.userAgent.toLowerCase();
                         titleDiv.style.width = gif.clientWidth + 'px';
                     };
@@ -525,7 +510,7 @@ var gfyObject = function (gfyElem) {
     }
 
     function gfyMouseOut() {
-        if (!opt.title) return;
+        if (!opt.title || !gfyItem.title) return;
         titleDiv.style.display = 'none';
     }
 
@@ -539,6 +524,7 @@ var gfyObject = function (gfyElem) {
         ctrlFaster.onclick = stepForward;
         ctrlSlower.onclick = stepBackward;
         vid.pause();
+        setVideoSources();
         // Swap video source tags for reverse encoded files
         var mp4src = byClass("mp4source", vid)[0];
         var webmsrc = byClass("webmsource", vid)[0];
@@ -584,12 +570,12 @@ var gfyObject = function (gfyElem) {
             };
             play();
         } else {
-            vid.currentTime += (1 / gfyFrameRate);
+            vid.currentTime += (1 / gfyItem.frameRate);
         }
     }
 
     function stepBackward() {
-        vid.currentTime -= (1 / gfyFrameRate);
+        vid.currentTime -= (1 / gfyItem.frameRate);
     }
 
     function refresh() {

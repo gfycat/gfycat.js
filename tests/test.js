@@ -165,6 +165,7 @@ describe("Asynchronous tests:", function() {
       expect(gif[0].tagName).toEqual('IMG');
       expect(gfyRootElement.getElementsByClassName('controls').length).toEqual(0);
       expect(gfyRootElement.getElementsByClassName('play-button').length).toEqual(0);
+      expect(gfyRootElement.getElementsByClassName('overlay').length).toEqual(0);
       done();
     }, dataLoadTimeout);
   });
