@@ -33,10 +33,9 @@ var gfyObject = function (gfyElem) {
     var isReverse = false;
     var self = this;
     var gfyItem;
-    var gfyWidth;
-    var gfyHeight;
     var inView = false;
 
+    var isVideoSourcesSet = false;
 
     var bool = {
       "true": true,
@@ -137,22 +136,27 @@ var gfyObject = function (gfyElem) {
         vid.style.height = 'auto';
         // poster url gfyName is case sensitive
         vid.setAttribute('poster', 'https://thumbs.gfycat.com/' + gfyItem.gfyName + '-poster.jpg');
-        setVideoSources();
         gfyRootElem.appendChild(vid);
+        if (vid.addEventListener) {
+          vid.addEventListener("loadedmetadata", vidLoaded, false);
+        } else {
+          vid.attachEvent("onloadedmetadata", vidLoaded);
+        }
     }
 
     function setVideoSources() {
-      if (vid) {
+      if (vid && !isVideoSourcesSet) {
         source2 = document.createElement('source');
-        source2.src = gfyWebmUrl;
+        source2.src = gfyItem.webmUrl;
         source2.type = 'video/webm';
         source2.className = "webmsource";
         vid.appendChild(source2);
         source = document.createElement('source');
-        source.src = gfyMp4Url;
+        source.src = gfyItem.mp4Url;
         source.type = 'video/mp4';
         source.className = "mp4source";
         vid.appendChild(source);
+        isVideoSourcesSet = true;
       }
     }
 
@@ -189,7 +193,7 @@ var gfyObject = function (gfyElem) {
     }
 
     function createCtrlBox() {
-        if (!opt.controls)
+        if (!opt.controls || ctrlBox)
             return;
         ctrlRow = document.createElement('div');
         ctrlRow.style.position = 'relative';
@@ -288,21 +292,29 @@ var gfyObject = function (gfyElem) {
         loadJSONP("https://gfycat.com/cajax/get/" + gfyId, function (data) {
             if (data) {
                 gfyItem = data.gfyItem;
-                gfyMp4Url = gfyItem.mp4Url;
-                gfyWebmUrl = gfyItem.webmUrl;
-                gfyFrameRate = gfyItem.frameRate;
                 if (!opt.gif && document.createElement('video').canPlayType) {
                     createVidTag();
+                    createCtrlBox();
+                    if (opt.optimize) {
+                      if (vid.poster) {
+                          var image = new Image();
+                          image.onload = function () {
+                            watchVideoOptimization();
+                          };
+                          image.onerror = function() {
+                            watchVideoOptimization();
+                          };
+                          image.src = vid.poster;
+                      } else {
+                        watchVideoOptimization();
+                      }
+                    } else {
+                      setVideoSources();
+                      if (opt.autoplay) vid.play();
+                    }
                     setWrapper();
                     createOverlay();
                     createTitle();
-                    // Can't grab the width/height until video loaded
-                    if (vid.addEventListener) {
-                      vid.addEventListener("loadedmetadata", vidLoaded, false);
-                    } else {
-                      vid.attachEvent("onloadedmetadata", vidLoaded);
-                    }
-                    if (opt.autoplay) vid.play();
                 } else {
                     opt.gif = true;
                     createGifTag();
@@ -317,6 +329,11 @@ var gfyObject = function (gfyElem) {
                 }
             }
         });
+    }
+
+    function watchVideoOptimization() {
+      checkScrollVideo();
+      watchElementInViewport(checkScrollVideo);
     }
 
     /**
@@ -379,6 +396,7 @@ var gfyObject = function (gfyElem) {
     function checkScrollVideo() {
         var checkInView = isElementInViewport(vid);
         if (checkInView && !inView) {
+            setVideoSources();
             if (opt.autoplay) play();
             inView = true;
         } else if (!checkInView && inView) {
@@ -426,28 +444,9 @@ var gfyObject = function (gfyElem) {
         }
     }
 
-    function setSize() {
-        gfyWidth = vid.offsetWidth;
-        gfyHeight = vid.offsetHeight;
-        // vid.videoWidth is the native size of the video. This stays the same even if the element is resized.
-        // if opt.expand is not set, then the video will never expand larger than videoWidth, so we need to choose this.
-        if (!opt.expand && gfyWidth > vid.videoWidth) {
-            gfyWidth = vid.videoWidth;
-            gfyHeight = vid.videoHeight;
-        }
-    }
-
     function vidLoaded() {
-        setSize();
-        if (!ctrlBox) {
-            createCtrlBox();
-        }
         if (!opt.autoplay && !isMobile && !opt.controls) {
           showPlayButton();
-        }
-        if (opt.optimize) {
-          checkScrollVideo();
-          watchElementInViewport(checkScrollVideo);
         }
 
         //handle pause via closing full screen on iOS
@@ -509,11 +508,15 @@ var gfyObject = function (gfyElem) {
     }
 
     function showPlayButton() {
-      overlay.button.style.display = "inline-block";
+      if (overlay && overlay.button) {
+        overlay.button.style.display = "inline-block";
+      }
     }
 
     function hidePlayButton() {
-       overlay.button.style.display = "none";
+       if (overlay && overlay.button) {
+         overlay.button.style.display = "none";
+       }
     }
 
     function gfyMouseOver() {

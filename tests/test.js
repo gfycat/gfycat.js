@@ -97,7 +97,7 @@ describe("Asynchronous tests:", function() {
     setTimeout(function() {
       gfyRootElement = newGfyObject.getRootElement();
       var videoElem = gfyRootElement.getElementsByTagName('video');
-      if (videoElem.lenght) {
+      if (videoElem.length) {
         expect(videoElem[0].autoplay).toBeFalsy();
       }
       done();
