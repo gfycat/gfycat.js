@@ -15,3 +15,34 @@ script:
   - npm install
   - gulp build
   - gulp test
+
+deploy:
+  - provider: s3
+    access_key_id: "$ARTIFACTS_KEY"
+    secret_access_key: "$ARTIFACTS_SECRET"
+    bucket: "assets.gfycat.com"
+    skip_cleanup: true
+    local_dir: dist
+    acl: public_read
+    region: us-west-1
+    cache_control: "max-age=86400,public"
+    detect_encoding: false
+    debug: true
+    on:
+      branch: master
+
+  - provider: s3
+    access_key_id: "$ARTIFACTS_KEY"
+    secret_access_key: "$ARTIFACTS_SECRET"
+    bucket: "assets.gfycat.com"
+    on:
+      all_branches: true
+    skip_cleanup: true
+    local_dir: dist
+    upload-dir: "gfycat/$TRAVIS_BUILD_ID"
+    acl: public_read
+    region: us-west-1
+    cache_control: "max-age=946707779,public"
+    expires: "Sat Apr 29 2032 13:31:45 GMT+0000"
+    detect_encoding: false
+    debug: true
