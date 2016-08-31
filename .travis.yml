@@ -23,7 +23,6 @@ deploy:
     bucket: "assets.gfycat.com"
     skip_cleanup: true
     local_dir: dist
-    upload-dir: "/"
     acl: public_read
     region: us-west-1
     cache_control: "max-age=86400,public"
