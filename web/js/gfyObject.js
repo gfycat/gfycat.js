@@ -15,7 +15,7 @@
  */
 
 
-/*
+/**
  * A new gfyObject is created for each
  * gfycat embed on the page.  This object
  * creates all video/control elements

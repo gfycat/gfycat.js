@@ -15,7 +15,7 @@
  */
 
 
-/*
+/**
  * gfyCollection:
  * Global object to be called on page load.
  * This runs through the page DOM for elements

@@ -35,7 +35,6 @@ gulp.task('build', function() {
   });
 });
 
-// TODO separate lint for code and tests
 gulp.task('lint', function() {
     return gulp.src(['web/js/*.js', 'tests/**/*.js'])
       .pipe(jshint({
@@ -47,10 +46,10 @@ gulp.task('lint', function() {
 
 gulp.task('compress', function () {
   gulp.src('web/js/*.js')
-    .pipe(concat('gfycat.js'))
+    .pipe(concat('dev.gfycat.js'))
     .pipe(gulp.dest('dist'))
-    .pipe(rename('gfycat.min.js'))
-    .pipe(uglify())
+    .pipe(rename('gfycat.js'))
+    .pipe(uglify({preserveComments: 'license'}))
     .pipe(gulp.dest('dist'));
 });
 
@@ -80,5 +79,3 @@ gulp.task('tdd', function (done) {
     configFile: __dirname + '/karma.conf.js'
   }, done).start();
 });
-
-//gulp.task('default', ['tdd']);
