@@ -25,9 +25,9 @@ limitations under the License.
 
 Embed script to generate gfycat embeds on 3rd party websites.
 
-The intent of this javascript is to provide a simple self cotained file that web publishers can use to easily include gfycat embeds on their websites.  
+The intent of this Javascript file is to provide a simple way for web publishers to include Gfycat embeds on their websites.
 
-By hosting it on github, users can request changes, contribute code, or fork a branch so that the embed process is adapted to actual real world needs.  
+This code is provided on Github, so users can request changes, contribute code, or fork a branch. Please contribute to the project to help improve it with actual real world needs.  
 
 ###Usage:  
 
@@ -42,23 +42,24 @@ Example:
     <div class="gfyitem" data-title=true data-autoplay=false data-controls=true data-id="BestYellowishElephantseal"></div>
 
 **The options are:**
-* `data-id`: the gfycat id (required)
-* `data-controls`: whether or not to include controls for pause/speed/etc (default: false)
-* `data-title`: whether or not to include the title on hover over (default: false)
-* `data-autoplay`: whether or not to automatically start playback when the page loads (default: true)
-* `data-expand` (DEPRECATED, use `data-responsive`): whether or not the video element should expand to fill the space of its container (default: false)
-* `data-responsive`: whether or not the video element should expand to fill the space of its container (default: false)
-* `data-max-height` (works **only** together with `data-responsive=true`): sets height upper bound for a responsive video
-* `data-optimize`: only plays videos when they're in view (~50% in) and lazy loads gifs (default: true)
+* `data-id`: the Gfycat id (required)
+* `data-controls`: include controls for pause/speed/etc (default: false)
+* `data-title`: show the title on hover (default: false)
+* `data-autoplay`: automatically start playback on page load (default: true)
+* `data-expand` (DEPRECATED, please use `data-responsive`): expand video element to fill the space of its container (default: false)
+* `data-responsive`: expand video element to fill the space of its container (default: false)
+* `data-max-height` (works **only** together with `data-responsive=true`): set height upper bound for a responsive video
+* `data-optimize`: play videos when they're 50% visible, and lazy loads gifs (default: true)
+* `data-gif`: load .gif file instead of video (default: false)
 
 ###Source code
 
 The code is broken down into two files:
 
-* **gfyCollection.js**: `gfyCollection` calls `gfyCollection.init()` on page load.  Its function is to find every gfycat embed on the page and create a gfyObject for it.
+* **gfyCollection.js**: `gfyCollection` calls `gfyCollection.init()` on page load.  Its function is to find every Gfycat embed on the page and create a gfyObject for it.
 * **gfyObject.js**:  a `new gfyObject` instance is created for each gfycat embed.  It contains all of the functions to generate the DOM and manipulate the video.  
 
-`gfyCollection.init` should be called on page load or after gfy elements appear on the page:  
+`gfyCollection.init` should be called on page load or after `gfyitem` elements appear on the page:  
 
     if (document.addEventListener) {
       document.addEventListener("DOMContentLoaded", gfyCollection.init, false);
@@ -68,7 +69,7 @@ The code is broken down into two files:
 
 The default key the embed script looks for is `class="gfyitem"`, or the class specificed in `gfyCollection.init('classname')`.
 
-Each instance of `gfyObject` has an `init` method. It's possible to initialize an object with a new data.
+Each instance of `gfyObject` has an `init` method. It's possible to initialize an object with new data.
 
 **html:**
 ```html
