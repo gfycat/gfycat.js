@@ -117,8 +117,8 @@ describe("Asynchronous tests:", function() {
     reinitTest(done, {id: 'ReliableSparklingArcherfish'}, {controls: true, autoplay: false});
   });
 
-  it("Reinit with gif=true && title=true", function(done) {
-    reinitTest(done, {id: 'ReliableSparklingArcherfish'}, {gif: true, title: true});
+  it("Reinit with gif=true", function(done) {
+    reinitTest(done, {id: 'ReliableSparklingArcherfish'}, {gif: true});
   });
 
   function reinitTest(done, initData, newData) {
