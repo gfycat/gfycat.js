@@ -1,0 +1,38 @@
+{
+  "name": "gfycat-js-embed",
+  "version": "1.0.0",
+  "description": "Gfycat js embed",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gfycat/gfycat.js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gfycat/gfycat.js/issues"
+  },
+  "homepage": "https://github.com/gfycat/gfycat.js#readme",
+  "devDependencies": {
+    "chalk": "^1.1.3",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-jshint": "^2.0.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^2.0.0",
+    "jasmine-core": "^2.4.1",
+    "jshint": "^2.9.3",
+    "jshint-stylish": "^2.2.1",
+    "karma": "^1.2.0",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-firefox-launcher": "^1.0.0",
+    "karma-jasmine": "^1.0.2",
+    "karma-safari-launcher": "^1.0.0",
+    "minimist": "^1.2.0",
+    "pump": "^1.0.1",
+    "run-sequence": "^1.2.2"
+  }
+}

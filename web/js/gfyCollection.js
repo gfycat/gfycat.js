@@ -1,4 +1,21 @@
-/*
+/**
+ * Copyright 2014-2016 Gfycat, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS-IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+/**
  * gfyCollection:
  * Global object to be called on page load.
  * This runs through the page DOM for elements
@@ -13,7 +30,8 @@
  */
 var gfyCollection = function () {
 
-    var collection = [];
+    var collection = [],
+        gfyClass = "gfyitem";
 
     // Helper function -- only required because some browsers do not have get by class name
     function byClass(className, obj) {
@@ -30,15 +48,18 @@ var gfyCollection = function () {
         }
     }
 
-    function init() {
-        scan();
+    function init(classname) {
+        classname = typeof classname==="string" ? classname : gfyClass;
+        scan(classname);
     }
 
-    function scan() {
+    function scan(classname) {
+        classname = typeof classname==="string" ? classname : gfyClass;
+
         // this can be run multiple times, so we'll add to any existing gfycats
         var last = collection.length;
         // find each gfycat on page and run its init
-        elem_coll = byClass("gfyitem", document);
+        elem_coll = byClass(classname, document);
         for (var i = 0; i < elem_coll.length; i++) {
             // don't need to worry about finding existing gfyitems - they are
             // replaced by gfyObject
@@ -60,6 +81,13 @@ var gfyCollection = function () {
         init: init,
         get: get,
         scan: scan
-    }
+    };
 
 }();
+
+if (document.addEventListener)
+    document.addEventListener("DOMContentLoaded", function() {
+        gfyCollection.init();
+    }, false);
+else
+    document.attachEvent("onreadystatechange", gfyCollection.init);
