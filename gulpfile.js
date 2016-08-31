@@ -20,6 +20,7 @@ var chalk = require('chalk'),
     jshint = require('gulp-jshint'),
     minimist = require('minimist'),
     pump = require('pump'),
+    rename = require('gulp-rename'),
     runSequence = require('run-sequence'),
     Server = require('karma').Server;
     stylish = require('jshint-stylish'),
@@ -47,14 +48,10 @@ gulp.task('lint', function() {
 gulp.task('compress', function () {
   gulp.src('web/js/*.js')
     .pipe(concat('gfycat.js'))
+    .pipe(gulp.dest('dist'))
+    .pipe(rename('gfycat.min.js'))
+    .pipe(uglify())
     .pipe(gulp.dest('dist'));
-
-  if (isProductionBuild) {
-    gulp.src('dist/gfycat.js')
-      .pipe(uglify())
-      .pipe(concat('gfycat.min.js'))
-      .pipe(gulp.dest('dist'));
-  }
 });
 
 gulp.task('watch', function() {
