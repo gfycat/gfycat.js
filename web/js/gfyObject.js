@@ -169,7 +169,7 @@ var gfyObject = function (gfyElem) {
         vid.className = 'gfy-video';
         if (opt.autoplay) vid.autoplay = true;
         vid.loop = true;
-        vid.controls = isMobile ? true : false;
+        vid.controls = false;
         vid.style.width = '100%';
         if (opt.responsive) {
           if (opt.controls) {
@@ -429,7 +429,11 @@ var gfyObject = function (gfyElem) {
         optDataset.responsive = optDataset.expand;
       }
 
-      updateOption("title", "true", newData);
+      if (isMobile) {
+        opt.title = false;
+      } else {
+        updateOption("title", "true", newData);
+      }
       updateOption("controls", "true", newData);
       updateOption("autoplay", "false", newData);
       updateOption("optimize", "false", newData);
@@ -590,12 +594,12 @@ var gfyObject = function (gfyElem) {
     }
 
     function play() {
-      vid.play();
+      if (vid.paused) vid.play();
       setCtrlsPlaying();
     }
 
     function pause() {
-      vid.pause();
+      if (!vid.paused) vid.pause();
       setCtrlsPaused();
     }
 
