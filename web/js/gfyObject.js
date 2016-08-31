@@ -22,33 +22,24 @@
  * and is self-contained with all functions
  * for interacting with its own gfycat video.
  */
-
 var gfyObject = function (gfyElem) {
     var gfyRootElem = gfyElem;
     var gfyId;
     var optDataset; // data- attributes from init
-
-    var opt = {
-      expand: false, // Option: will video grow to fill space
-      title: false, // Option: display title on hover over
-      controls: false, // Option: display title on hover over
-      autoplay: true, // Option: automatically play video when loaded
-      optimize: true, // Option: play video only when in viewport and lazy load for .gif
-      gif: false // Option: gif is loaded instead of video
-    };
+    var opt = {};
 
     // references to each html element
     var ctrlBox;
     var ctrlPausePlay;
+    var ctrlReverse;
     var ctrlSlower;
     var ctrlFaster;
     var vid;
     var gif;
     var overlay;
     var titleDiv;
-    var isMobile;
+    var isMobile = mobilecheck();
     var isReverse = false;
-    var self = this;
     var gfyItem;
     var inView = false;
 
@@ -58,6 +49,17 @@ var gfyObject = function (gfyElem) {
       "true": true,
       "false": false
     };
+
+    function initOptions() {
+      opt = {
+        title: false, // Option: display title on hover over
+        controls: false, // Option: display title on hover over
+        autoplay: true, // Option: automatically play video when loaded
+        optimize: true, // Option: play video only when in viewport and lazy load for .gif
+        gif: false, // Option: gif is loaded instead of video
+        responsive: false // Option: element takes 100% width of a container
+      };
+    }
 
     // Helper function -- only required because some browsers do not have get by class name
     function byClass(className, obj) {
@@ -99,29 +101,39 @@ var gfyObject = function (gfyElem) {
         titleDiv.style.boxSizing = "border-box";
         titleDiv.style.display = "none";
         gfyRootElem.appendChild(titleDiv);
-        overlay.onmouseout = gfyMouseOut;
-        overlay.onmouseover = gfyMouseOver;
     }
 
-    // overlay used to display a play button overlay if
-    // video is not on "autoplay"
+    /**
+    * Overlay shows playButton when video is paused and there're no controls
+    * and handles mouse hover event for showing/hiding title.
+    */
     function createOverlay() {
         overlay = document.createElement('div');
         overlay.className = "overlay";
         overlay.style.position = "absolute";
         overlay.style.width = "100%";
-        if (opt.controls) {
-          overlay.style.height = "calc(100% - 22px)";
-        } else {
-          overlay.style.height = "100%";
-        }
         overlay.style.left = "0";
         overlay.style.top = "0";
         overlay.style.boxSizing = "border-box";
-        overlay.style.cursor = "pointer";
-        overlay.style.textAlign = "center";
-        overlay.onclick = pauseClick;
-        if (!opt.controls) overlay.button = createPlayButton();
+
+        if (opt.controls) {
+          overlay.style.height = "calc(100% - 22px)"; // 22px - controls height
+        } else {
+          overlay.style.height = "100%";
+        }
+
+        if (!opt.gif) {
+          overlay.style.cursor = "pointer";
+          overlay.style.textAlign = "center";
+          overlay.onclick = pauseClick;
+          if (!opt.controls) overlay.button = createPlayButton();
+        }
+
+        if (opt.title && gfyItem.title) {
+          overlay.onmouseout = gfyMouseOut;
+          overlay.onmouseover = gfyMouseOver;
+        }
+
         gfyRootElem.appendChild(overlay);
     }
 
@@ -144,6 +156,10 @@ var gfyObject = function (gfyElem) {
         playButton.style.textShadow = "#333 0px 0px 1px";
         playButton.innerHTML = "&#9654;";
         playButton.style.display = "none";
+        playButton.style.userSelect = "none";
+        playButton.style.webkitUserSelect = "none";
+        playButton.style.msUserSelect = "none";
+        playButton.style.MozUserSelect = "none";
         overlay.appendChild(playButton);
         return playButton;
     }
@@ -155,7 +171,19 @@ var gfyObject = function (gfyElem) {
         vid.loop = true;
         vid.controls = isMobile ? true : false;
         vid.style.width = '100%';
-        vid.style.height = 'auto';
+        if (opt.responsive) {
+          if (opt.controls) {
+            vid.style.height = 'calc(100% - 20px)';
+          } else {
+            vid.style.height = '100%';
+          }
+
+          vid.style.position = 'absolute';
+          vid.style.top = '0';
+          vid.style.left = '0';
+        } else {
+          vid.style.height = 'auto';
+        }
         // poster url gfyName is case sensitive
         vid.setAttribute('poster', 'https://thumbs.gfycat.com/' + gfyItem.gfyName + '-poster.jpg');
         gfyRootElem.appendChild(vid);
@@ -193,25 +221,16 @@ var gfyObject = function (gfyElem) {
         gif = document.createElement('img');
         gif.className = "gif";
         gif.src = opt.optimize ? '' : gfyItem.gifUrl;
-        if (opt.expand) {
+        if (opt.responsive) {
           gif.style.width = '100%';
+          gif.style.position = 'absolute';
+          gif.style.top = '0';
+          gif.style.left = '0';
         } else {
           gif.style.maxWidth = gfyItem.width + 'px';
         }
         gif.style.height = 'auto';
-        gif.onmouseout = gfyMouseOut;
-        gif.onmouseover = gfyMouseOver;
         gfyRootElem.appendChild(gif);
-    }
-
-    function setWrapper() {
-        if (!opt.expand) {
-            gfyRootElem.style.display = 'inline-block';
-            gfyRootElem.style.overflow = 'hidden';
-            gfyRootElem.style.boxSizing = 'border-box';
-            gfyRootElem.style.MozBoxSizing = 'border-box';
-            gfyRootElem.style.webkitBoxSizing = 'border-box';
-        }
     }
 
     function createCtrlBox() {
@@ -266,71 +285,116 @@ var gfyObject = function (gfyElem) {
     * @param {?Object} newData - can be passed to re-initialize gfy element
     */
     function init(newData) {
-        isMobile = mobilecheck();
+        var currGfyId = gfyId;
         initData(newData);
-        var newElem = document.createElement('div');
-        attrib_src = gfyRootElem.attributes;
-        attrib_dest = newElem.attributes;
-        for (var i = 0; i < attrib_src.length; i++) {
-            var tst = attrib_src.item(i);
-            var tst2 = tst.cloneNode();
-            if (tst2.name == "style" && tst.value != 'null') {
-                attrib_dest.setNamedItem(tst2);
-            }
-            //attrib_dest.setNamedItem(attrib_src.item(i).cloneNode());
-        }
-        gfyRootElem.parentNode.replaceChild(newElem, gfyRootElem);
-        gfyRootElem = newElem;
-        gfyRootElem.style.position = "relative";
-        gfyRootElem.style.padding = 0;
-        gfyRootElem.style.fontSize = 0;
+
+        isVideoSourcesSet = false;
+        inView = false;
+
         try {
           if (!gfyId) throw new Error("Gfyid is required!");
         } catch (err) {
           console.log(err);
           return;
         }
-        // call gfycat API to get info for this gfycat
-        loadJSONP("https://gfycat.com/cajax/get/" + gfyId, function (data) {
-            if (data) {
-                gfyItem = data.gfyItem;
-                if (!opt.gif && document.createElement('video').canPlayType) {
-                    createVidTag();
-                    createCtrlBox();
-                    if (opt.optimize) {
-                      if (vid.poster) {
-                          var image = new Image();
-                          image.onload = function () {
-                            watchVideoOptimization();
-                          };
-                          image.onerror = function() {
-                            watchVideoOptimization();
-                          };
-                          image.src = vid.poster;
-                      } else {
-                        watchVideoOptimization();
-                      }
-                    } else {
-                      setVideoSources();
-                      if (opt.autoplay) vid.play();
-                    }
-                    setWrapper();
-                    createOverlay();
-                    createTitle();
-                } else {
-                    opt.gif = true;
-                    createGifTag();
-                    createTitle();
-                    checkScrollGif();
-                    watchElementInViewport(checkScrollGif);
-                    gif.onload = function () {
-                        if (!opt.title || !gfyItem.title) return;
-                        var ua = navigator.userAgent.toLowerCase();
-                        titleDiv.style.width = gif.clientWidth + 'px';
-                    };
-                }
+
+        if (!currGfyId || currGfyId !== gfyId) {
+          var newElem = document.createElement('div');
+          attrib_src = gfyRootElem.attributes;
+          attrib_dest = newElem.attributes;
+          for (var i = 0; i < attrib_src.length; i++) {
+              var tst = attrib_src.item(i);
+              var tst2 = tst.cloneNode();
+              if (tst2.name == "style" && tst.value != 'null') {
+                  attrib_dest.setNamedItem(tst2);
+              }
+              //attrib_dest.setNamedItem(attrib_src.item(i).cloneNode());
+          }
+          gfyRootElem.parentNode.replaceChild(newElem, gfyRootElem);
+          gfyRootElem = newElem;
+          gfyRootElem.style.position = "relative";
+          gfyRootElem.style.padding = 0;
+          gfyRootElem.style.fontSize = 0;
+
+          // call gfycat API to get info for this gfycat
+          loadJSONP("https://gfycat.com/cajax/get/" + gfyId, function (data) {
+              if (data) {
+                  gfyItem = data.gfyItem;
+                  createGfyContent();
+              }
+          });
+        } else {
+          gfyRootElem.innerHTML = "";
+          createGfyContent();
+        }
+    }
+
+    function createGfyContent() {
+      updateLayout();
+
+      if (!opt.gif && document.createElement('video').canPlayType) {
+          createVidTag();
+          createCtrlBox();
+
+          createTitle();
+          createOverlay();
+
+          if (opt.optimize) {
+            if (vid.poster) {
+                var image = new Image();
+                image.onload = function () {
+                  watchVideoOptimization();
+                };
+                image.onerror = function() {
+                  watchVideoOptimization();
+                };
+                image.src = vid.poster;
+            } else {
+              watchVideoOptimization();
             }
-        });
+          } else {
+            setVideoSources();
+            if (opt.autoplay) play();
+          }
+
+      } else {
+          opt.gif = true;
+          // Disabled options for gif
+          opt.controls = false;
+          opt.autoplay = false;
+
+          createGifTag();
+          checkScrollGif();
+          watchElementInViewport(checkScrollGif);
+          gif.onload = function() {
+              if (!opt.title || !gfyItem.title) return;
+              createTitle();
+              createOverlay();
+              var ua = navigator.userAgent.toLowerCase();
+              titleDiv.style.width = gif.clientWidth + 'px'; // TODO: responsive ??
+          };
+      }
+    }
+
+    function updateLayout() {
+      if (opt.responsive) {
+        var sizer = document.createElement('div');
+        sizer.className = 'sizer';
+        sizer.style.position = 'relative';
+        var ratio = gfyItem.width / gfyItem.height;
+        sizer.style.paddingBottom = 100 / ratio + '%';
+        gfyRootElem.appendChild(sizer);
+        if (opt.maxHeight) {
+          gfyRootElem.style.maxWidth = opt.maxHeight * ratio + 'px';
+        }
+        gfyRootElem.style.margin = '0 auto';
+      } else {
+        gfyRootElem.style.display = 'inline-block';
+        gfyRootElem.style.overflow = 'hidden';
+        gfyRootElem.style.boxSizing = 'border-box';
+        gfyRootElem.style.MozBoxSizing = 'border-box';
+        gfyRootElem.style.webkitBoxSizing = 'border-box';
+      }
     }
 
     function watchVideoOptimization() {
@@ -342,18 +406,44 @@ var gfyObject = function (gfyElem) {
     * @param {?Object} newData - can be passed to re-initialize gfy element
     */
     function initData(newData) {
+      initOptions();
       if (!optDataset) optDataset = gfyRootElem.dataset;
       if (newData && newData.id) {
         gfyId = newData.id;
       } else if (!gfyId) {
         gfyId = optDataset.id;
       }
+
+      /**
+      * Option 'expand' is deprecated.
+      * For a backward compatibility its value is used as a 'responsive' option
+      * value if 'responsive' wasn't set.
+      */
+      if (newData && newData.hasOwnProperty('expand') &&
+         !newData.hasOwnProperty('responsive')) {
+        newData.responsive = newData.expand;
+      }
+
+      if (optDataset.hasOwnProperty('expand') &&
+         !optDataset.hasOwnProperty('responsive')) {
+        optDataset.responsive = optDataset.expand;
+      }
+
       updateOption("title", "true", newData);
-      updateOption("expand", "true", newData);
       updateOption("controls", "true", newData);
       updateOption("autoplay", "false", newData);
-      updateOption("optimize", "true", newData);
+      updateOption("optimize", "false", newData);
       updateOption("gif", "true", newData);
+
+      updateOption("responsive", "true", newData);
+
+      if (opt.responsive) {
+        if (newData && newData.hasOwnProperty('maxHeight')) {
+          opt.maxHeight = newData.maxHeight;
+        } else if (optDataset && optDataset.hasOwnProperty('maxHeight')) {
+          opt.maxHeight = optDataset.maxHeight;
+        }
+      }
 
       optDataset = {}; // clear after the first init
     }

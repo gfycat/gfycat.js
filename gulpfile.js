@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-var gulp = require('gulp'),
-    jshint = require('gulp-jshint'),
-    stylish = require('jshint-stylish'),
-    uglify = require('gulp-uglify'),
-    pump = require('pump'),
-    rename = require('gulp-rename'), // TODO: delete ?
+var chalk = require('chalk'),
     concat = require('gulp-concat'),
+    gulp = require('gulp'),
+    jshint = require('gulp-jshint'),
+    minimist = require('minimist'),
+    pump = require('pump'),
     runSequence = require('run-sequence'),
-    chalk = require('chalk'),
     Server = require('karma').Server;
+    stylish = require('jshint-stylish'),
+    uglify = require('gulp-uglify');
 
-var isProductionBuild = false;
+var argv = minimist(process.argv.slice(2));
+var isProductionBuild = argv.prod ? true : false;
 
 gulp.task('build', function() {
   runSequence('lint', 'compress', function(err) {

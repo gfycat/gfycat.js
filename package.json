@@ -31,6 +31,7 @@
     "karma-firefox-launcher": "^1.0.0",
     "karma-jasmine": "^1.0.2",
     "karma-safari-launcher": "^1.0.0",
+    "minimist": "^1.2.0",
     "pump": "^1.0.1",
     "run-sequence": "^1.2.2"
   }
