@@ -598,6 +598,7 @@ var gfyObject = function (gfyElem) {
 
     function play() {
       if (vid.paused) vid.play();
+      if (vid.paused) setCtrlsPaused();
     }
 
     function pause() {
