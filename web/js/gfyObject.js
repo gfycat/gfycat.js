@@ -139,27 +139,30 @@ var gfyObject = function (gfyElem) {
 
     function createPlayButton() {
         var playButton = document.createElement('div');
+        var arrowHtml = '<div style="width:0;height:0;margin-left:4px;' +
+          'border-style:solid;border-width: 17px 0 17px 29px;' +
+          'border-color: transparent transparent transparent #ffffff;"></div>';
+
         playButton.className = "play-button";
-        playButton.style.color = "#fff";
-        playButton.style.fontSize = "40px";
-        playButton.style.lineHeight = "60px";
-        playButton.style.marginTop = "-39px";
         playButton.style.position = "relative";
+        playButton.style.display = "none";
         playButton.style.top = "50%";
-        playButton.style.border = "1px solid rgba(100, 100, 100, .3)";
-        playButton.style.borderRadius = "50%";
-        playButton.style.boxSizing = "border-box";
+        playButton.style.marginTop = "-39px";
         playButton.style.width = "75px";
         playButton.style.height = "75px";
-        playButton.style.padding = "9px 0 0 7px";
+        playButton.style.justifyContent = "center";
+        playButton.style.alignItems = "center";
+        playButton.style.boxSizing = "border-box";
+        playButton.style.border = "1px solid rgba(100, 100, 100, .3)";
+        playButton.style.borderRadius = "50%";
         playButton.style.backgroundColor = "rgba(255,255,255,.3)";
-        playButton.style.textShadow = "#333 0px 0px 1px";
-        playButton.innerHTML = "&#9654;";
-        playButton.style.display = "none";
+        playButton.style.color = "#fff";
         playButton.style.userSelect = "none";
         playButton.style.webkitUserSelect = "none";
         playButton.style.msUserSelect = "none";
         playButton.style.MozUserSelect = "none";
+        playButton.innerHTML = arrowHtml;
+
         overlay.appendChild(playButton);
         return playButton;
     }
@@ -607,7 +610,7 @@ var gfyObject = function (gfyElem) {
 
     function showPlayButton() {
       if (overlay && overlay.button) {
-        overlay.button.style.display = "inline-block";
+        overlay.button.style.display = "inline-flex";
       }
     }
 
