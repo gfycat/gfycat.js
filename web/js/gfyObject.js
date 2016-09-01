@@ -170,6 +170,8 @@ var gfyObject = function (gfyElem) {
         if (opt.autoplay) vid.autoplay = true;
         vid.loop = true;
         vid.controls = false;
+        vid.setAttribute('playsinline', '');
+        vid.setAttribute('muted', '');
         vid.style.width = '100%';
         if (opt.responsive) {
           if (opt.controls) {
