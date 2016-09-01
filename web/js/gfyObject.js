@@ -197,6 +197,8 @@ var gfyObject = function (gfyElem) {
         } else {
           vid.attachEvent("onloadedmetadata", vidLoaded);
         }
+        vid.addEventListener('play', onPlay);
+        vid.addEventListener('pause', onPause);
     }
 
     function setVideoSources() {
@@ -552,13 +554,9 @@ var gfyObject = function (gfyElem) {
 
         //handle pause via closing full screen on iOS
         if (window.addEventListener) {
-            vid.addEventListener('webkitendfullscreen', function () {
-                pause();
-            });
+            vid.addEventListener('webkitendfullscreen', pause);
         } else if (window.attachEvent)  {
-            vid.attachEvent('webkitendfullscreen', function () {
-                pause();
-            });
+            vid.attachEvent('webkitendfullscreen', pause);
         }
     }
 
@@ -600,11 +598,17 @@ var gfyObject = function (gfyElem) {
 
     function play() {
       if (vid.paused) vid.play();
-      setCtrlsPlaying();
     }
 
     function pause() {
       if (!vid.paused) vid.pause();
+    }
+
+    function onPlay() {
+      setCtrlsPlaying();
+    }
+
+    function onPause() {
       setCtrlsPaused();
     }
 
@@ -639,7 +643,7 @@ var gfyObject = function (gfyElem) {
         ctrlFaster.style.width = "8px";
         ctrlFaster.onclick = stepForward;
         ctrlSlower.onclick = stepBackward;
-        vid.pause();
+        pause();
         setVideoSources();
         // Swap video source tags for reverse encoded files
         var mp4src = byClass("mp4source", vid)[0];
