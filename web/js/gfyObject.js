@@ -322,6 +322,7 @@ var gfyObject = function (gfyElem) {
           gfyRootElem.style.position = "relative";
           gfyRootElem.style.padding = 0;
           gfyRootElem.style.fontSize = 0;
+          sendAnalytics(gfyId);
 
           // call gfycat API to get info for this gfycat
           loadJSONP("https://gfycat.com/cajax/get/" + gfyId, function (data) {
@@ -706,6 +707,35 @@ var gfyObject = function (gfyElem) {
 
     function getRootElement() {
       return gfyRootElem;
+    }
+
+    function sendAnalytics() {
+        var url = "https://gfycat.com/cajax/getTx/" + gfyId;
+
+        var request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.send();
+
+        request.onreadystatechange = function () {
+            if (request.readyState === XMLHttpRequest.DONE && request.status === 200) {
+                if (request.response) {
+                    var response = JSON.parse(request.response);
+                    if (!response.tx) return;
+                    var ref = "";
+                    if (typeof document.referrer !== "undefined" && document.referrer) {
+                        ref = encodeURIComponent(document.referrer);
+                    } else {
+                        ref = location.href;
+                    }
+                    var data = {
+                        ref: ref,
+                        module: 'jsEmbed',
+                        device_type: isMobile ? 'mobile' : 'desktop'
+                    };
+                    GfyAnalytics.sendViewCount(response.tx, data);
+                }
+            }
+        };
     }
 
     return {
