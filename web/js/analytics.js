@@ -67,7 +67,7 @@ var GfyAnalytics = function() {
       utc = readCookie('_utc');
       if (!utc) {
         utc = generateUUID();
-        createCookie('_utc', utc, 2 * 365 * 24 * 60 * 60);
+        createCookie('_utc', utc, 31536000); // 1 year
       }
     }
 
@@ -75,13 +75,14 @@ var GfyAnalytics = function() {
       stc = readCookie('_stc');
       if (!stc) {
         stc = generateUUID();
-        createCookie('_stc', stc, 30 * 60);
+        createCookie('_stc', stc, 1800); // 0.5 hour
       }
     }
   }
 
 
   function sendViewCount(tx, data) {
+    if (navigator.doNotTrack) return;
     generateUserSessionID();
 
     var _utc = encodeURIComponent(utc);
@@ -139,6 +140,7 @@ var GfyAnalytics = function() {
     });
   */
   var sendEvent = function(kv) {
+    if (navigator.doNotTrack) return;
     generateUserSessionID();
 
     var ref = 'https://www.gfycat.com';
@@ -160,6 +162,7 @@ var GfyAnalytics = function() {
   };
 
   var sendEventWithCallback = function(kv, callback) {
+    if (navigator.doNotTrack) return;
     generateUserSessionID();
 
     var ref = 'https://www.gfycat.com';
