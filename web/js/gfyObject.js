@@ -139,27 +139,30 @@ var gfyObject = function (gfyElem) {
 
     function createPlayButton() {
         var playButton = document.createElement('div');
+        var arrowHtml = '<div style="width:0;height:0;margin-left:4px;' +
+          'border-style:solid;border-width: 17px 0 17px 29px;' +
+          'border-color: transparent transparent transparent #ffffff;"></div>';
+
         playButton.className = "play-button";
-        playButton.style.color = "#fff";
-        playButton.style.fontSize = "40px";
-        playButton.style.lineHeight = "60px";
-        playButton.style.marginTop = "-39px";
         playButton.style.position = "relative";
+        playButton.style.display = "none";
         playButton.style.top = "50%";
-        playButton.style.border = "1px solid rgba(100, 100, 100, .3)";
-        playButton.style.borderRadius = "50%";
-        playButton.style.boxSizing = "border-box";
+        playButton.style.marginTop = "-39px";
         playButton.style.width = "75px";
         playButton.style.height = "75px";
-        playButton.style.padding = "9px 0 0 7px";
+        playButton.style.justifyContent = "center";
+        playButton.style.alignItems = "center";
+        playButton.style.boxSizing = "border-box";
+        playButton.style.border = "1px solid rgba(100, 100, 100, .3)";
+        playButton.style.borderRadius = "50%";
         playButton.style.backgroundColor = "rgba(255,255,255,.3)";
-        playButton.style.textShadow = "#333 0px 0px 1px";
-        playButton.innerHTML = "&#9654;";
-        playButton.style.display = "none";
+        playButton.style.color = "#fff";
         playButton.style.userSelect = "none";
         playButton.style.webkitUserSelect = "none";
         playButton.style.msUserSelect = "none";
         playButton.style.MozUserSelect = "none";
+        playButton.innerHTML = arrowHtml;
+
         overlay.appendChild(playButton);
         return playButton;
     }
@@ -170,6 +173,8 @@ var gfyObject = function (gfyElem) {
         if (opt.autoplay) vid.autoplay = true;
         vid.loop = true;
         vid.controls = false;
+        vid.setAttribute('playsinline', '');
+        vid.setAttribute('muted', '');
         vid.style.width = '100%';
         if (opt.responsive) {
           if (opt.controls) {
@@ -192,6 +197,8 @@ var gfyObject = function (gfyElem) {
         } else {
           vid.attachEvent("onloadedmetadata", vidLoaded);
         }
+        vid.addEventListener('play', onPlay);
+        vid.addEventListener('pause', onPause);
     }
 
     function setVideoSources() {
@@ -315,6 +322,7 @@ var gfyObject = function (gfyElem) {
           gfyRootElem.style.position = "relative";
           gfyRootElem.style.padding = 0;
           gfyRootElem.style.fontSize = 0;
+          sendAnalytics(gfyId);
 
           // call gfycat API to get info for this gfycat
           loadJSONP("https://gfycat.com/cajax/get/" + gfyId, function (data) {
@@ -547,13 +555,9 @@ var gfyObject = function (gfyElem) {
 
         //handle pause via closing full screen on iOS
         if (window.addEventListener) {
-            vid.addEventListener('webkitendfullscreen', function () {
-                pause();
-            });
+            vid.addEventListener('webkitendfullscreen', pause);
         } else if (window.attachEvent)  {
-            vid.attachEvent('webkitendfullscreen', function () {
-                pause();
-            });
+            vid.attachEvent('webkitendfullscreen', pause);
         }
     }
 
@@ -595,17 +599,24 @@ var gfyObject = function (gfyElem) {
 
     function play() {
       if (vid.paused) vid.play();
-      setCtrlsPlaying();
+      if (vid.paused) setCtrlsPaused();
     }
 
     function pause() {
       if (!vid.paused) vid.pause();
+    }
+
+    function onPlay() {
+      setCtrlsPlaying();
+    }
+
+    function onPause() {
       setCtrlsPaused();
     }
 
     function showPlayButton() {
       if (overlay && overlay.button) {
-        overlay.button.style.display = "inline-block";
+        overlay.button.style.display = "inline-flex";
       }
     }
 
@@ -634,7 +645,7 @@ var gfyObject = function (gfyElem) {
         ctrlFaster.style.width = "8px";
         ctrlFaster.onclick = stepForward;
         ctrlSlower.onclick = stepBackward;
-        vid.pause();
+        pause();
         setVideoSources();
         // Swap video source tags for reverse encoded files
         var mp4src = byClass("mp4source", vid)[0];
@@ -696,6 +707,35 @@ var gfyObject = function (gfyElem) {
 
     function getRootElement() {
       return gfyRootElem;
+    }
+
+    function sendAnalytics() {
+        var url = "https://gfycat.com/cajax/getTx/" + gfyId;
+
+        var request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.send();
+
+        request.onreadystatechange = function () {
+            if (request.readyState === XMLHttpRequest.DONE && request.status === 200) {
+                if (request.response) {
+                    var response = JSON.parse(request.response);
+                    if (!response.tx) return;
+                    var ref = "";
+                    if (typeof document.referrer !== "undefined" && document.referrer) {
+                        ref = encodeURIComponent(document.referrer);
+                    } else {
+                        ref = location.href;
+                    }
+                    var data = {
+                        ref: ref,
+                        module: 'jsEmbed',
+                        device_type: isMobile ? 'mobile' : 'desktop'
+                    };
+                    GfyAnalytics.sendViewCount(response.tx, data);
+                }
+            }
+        };
     }
 
     return {
