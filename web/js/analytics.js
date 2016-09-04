@@ -180,7 +180,7 @@ var GfyAnalytics = function() {
   var initGA = function() {
     if (typeof ga !== 'undefined') {
       ga(function() {
-        if (!ga.getByName('myTracker')) {
+        if (!ga.getByName('gfyTracker')) {
           ga('create', 'UA-40130883-1', 'auto', 'gfyTracker');
         }
       });
