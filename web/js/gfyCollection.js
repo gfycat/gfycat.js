@@ -49,6 +49,7 @@ var gfyCollection = function() {
     }
 
     function init(classname) {
+        if (GfyAnalytics) GfyAnalytics.initGA();
         classname = typeof classname==="string" ? classname : gfyClass;
         scan(classname);
     }

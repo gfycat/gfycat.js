@@ -17,12 +17,6 @@
 var GfyAnalytics = function() {
   var utc = 0, stc = 0;
 
-  if (typeof ga !== 'undefined') {
-    ga('create', 'UA-40130883-1', 'auto', 'gfyTracker');
-  } else {
-    ga = undefined;
-  }
-
   function generateUUID() {
     var b = new Date().getTime();
     var a = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(e) {
@@ -183,9 +177,22 @@ var GfyAnalytics = function() {
     }
   };
 
+  var initGA = function() {
+    if (typeof ga !== 'undefined') {
+      ga(function() {
+        if (!ga.getByName('gfyTracker')) {
+          ga('create', 'UA-40130883-1', 'auto', 'gfyTracker');
+        }
+      });
+    } else {
+      ga = undefined;
+    }
+  };
+
   return {
     sendEvent: sendEvent,
     sendEventWithCallback: sendEventWithCallback,
-    sendViewCount: sendViewCount
+    sendViewCount: sendViewCount,
+    initGA: initGA
   };
 }();
