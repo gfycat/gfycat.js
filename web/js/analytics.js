@@ -178,8 +178,12 @@ var GfyAnalytics = function() {
   };
 
   var initGA = function() {
-    if (typeof ga !== 'undefined' && !ga.getByName('gfyTracker')) {
-      ga('create', 'UA-40130883-1', 'auto', 'gfyTracker');
+    if (typeof ga !== 'undefined') {
+      ga(function() {
+        if (!ga.getByName('myTracker')) {
+          ga('create', 'UA-40130883-1', 'auto', 'gfyTracker');
+        }
+      });
     } else {
       ga = undefined;
     }
