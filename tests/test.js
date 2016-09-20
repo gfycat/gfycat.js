@@ -356,6 +356,51 @@ describe("Asynchronous tests:", function() {
     });
   });
 
+  it("data-playback-speed=3", function(done) {
+    var data = {
+      playbackSpeed: 3
+    };
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+      gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
+      var videoElem = gfyRootElement.getElementsByTagName('video')[0];
+      expect(videoElem.playbackRate).toEqual(3);
+      done();
+    });
+  });
+
+  it("data-playback-speed=10", function(done) {
+    var data = {
+      playbackSpeed: 10
+    };
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+      gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
+      var videoElem = gfyRootElement.getElementsByTagName('video')[0];
+      expect(videoElem.playbackRate).toEqual(8);
+      done();
+    });
+  });
+
+  it("data-playback-speed=10", function(done) {
+    var data = {
+      playbackSpeed: 0.0001
+    };
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+      gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
+      var videoElem = gfyRootElement.getElementsByTagName('video')[0];
+      expect(videoElem.playbackRate).toEqual(0.125);
+      done();
+    });
+  });
+
   it("Paused controls", function(done) {
     var data = {
       autoplay: false,

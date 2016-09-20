@@ -25,6 +25,7 @@
 var gfyObject = function (gfyElem) {
     var gfyRootElem = gfyElem;
     var gfyId;
+    var playbackSpeed;
     var optDataset; // data- attributes from init
     var opt = {};
 
@@ -198,6 +199,8 @@ var gfyObject = function (gfyElem) {
         } else {
           vid.attachEvent("onloadedmetadata", vidLoaded);
         }
+        if (playbackSpeed) vid.playbackRate = playbackSpeed;
+
         vid.addEventListener('play', onPlay);
         vid.addEventListener('pause', onPause);
     }
@@ -435,11 +438,21 @@ var gfyObject = function (gfyElem) {
     function initData(newData) {
       initOptions();
       if (!optDataset) optDataset = gfyRootElem.dataset;
+
       if (newData && newData.id) {
         gfyId = newData.id;
       } else if (!gfyId) {
         gfyId = optDataset.id;
       }
+
+      if (newData && newData.playbackSpeed) {
+        playbackSpeed = newData.playbackSpeed;
+      } else if (!playbackSpeed) {
+        playbackSpeed = optDataset.playbackSpeed;
+      }
+
+      if (playbackSpeed && playbackSpeed > 8) playbackSpeed = 8;
+      if (playbackSpeed && playbackSpeed < 0.125) playbackSpeed = 0.125;
 
       /**
       * Option 'expand' is deprecated.

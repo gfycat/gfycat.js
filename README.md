@@ -53,6 +53,7 @@ Example:
 * `data-optimize`: play videos when they're 50% visible, and lazy loads gifs (default: true)
 * `data-gif`: load .gif file instead of video (default: false)
 * `data-hd`: load high quality video (default: true)
+* `data-playback-speed`: set video playback speed, values from the interval \[0.125, 8\] (default: 1)
 
 ###Source code
 
