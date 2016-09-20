@@ -21,7 +21,8 @@ limitations under the License.
 
 - 0.1: Initial revision
 - 1.0: Fixes to initialization, cleaned up UI, support for mobile browsers
-- 1.1: Support for autoplaying looping MP4 on iOS 10, GIF view count analytics 
+- 1.1: Support for autoplaying looping MP4 on iOS 10, GIF view count analytics
+- 1.2: New options: data-hd, data-playback-speed; Custom classes can be added to root element before init
 
 
 Embed script to generate gfycat embeds on 3rd party websites.
@@ -52,6 +53,8 @@ Example:
 * `data-max-height` (works **only** together with `data-responsive=true`): set height upper bound for a responsive video
 * `data-optimize`: play videos when they're 50% visible, and lazy loads gifs (default: true)
 * `data-gif`: load .gif file instead of video (default: false)
+* `data-hd`: load high quality video (default: true)
+* `data-playback-speed`: set video playback speed, values from the interval \[0.125, 8\] (default: 1)
 
 ###Source code
 

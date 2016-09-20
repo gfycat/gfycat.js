@@ -21,10 +21,14 @@
  * creates all video/control elements
  * and is self-contained with all functions
  * for interacting with its own gfycat video.
+ *
+ * @param {Element} gfyElem - root element
+ * @param {String} classname - init class name
  */
-var gfyObject = function (gfyElem) {
+var gfyObject = function (gfyElem, classname) {
     var gfyRootElem = gfyElem;
     var gfyId;
+    var playbackSpeed;
     var optDataset; // data- attributes from init
     var opt = {};
 
@@ -57,7 +61,8 @@ var gfyObject = function (gfyElem) {
         autoplay: true, // Option: automatically play video when loaded
         optimize: true, // Option: play video only when in viewport and lazy load for .gif
         gif: false, // Option: gif is loaded instead of video
-        responsive: false // Option: element takes 100% width of a container
+        responsive: false, // Option: element takes 100% width of a container
+        hd: true // Option: load high quality video
       };
     }
 
@@ -197,19 +202,28 @@ var gfyObject = function (gfyElem) {
         } else {
           vid.attachEvent("onloadedmetadata", vidLoaded);
         }
+        if (playbackSpeed) vid.playbackRate = playbackSpeed;
+
         vid.addEventListener('play', onPlay);
         vid.addEventListener('pause', onPause);
     }
 
     function setVideoSources() {
       if (vid && !isVideoSourcesSet) {
-        source2 = document.createElement('source');
-        source2.src = gfyItem.webmUrl;
-        source2.type = 'video/webm';
-        source2.className = "webmsource";
-        vid.appendChild(source2);
+        if (opt.hd) {
+          source2 = document.createElement('source');
+          source2.src = gfyItem.webmUrl;
+          source2.type = 'video/webm';
+          source2.className = "webmsource";
+          vid.appendChild(source2);
+        }
+
         source = document.createElement('source');
-        source.src = gfyItem.mp4Url;
+        if (opt.hd)  {
+          source.src = gfyItem.mp4Url;
+        } else {
+          source.src = gfyItem.mobileUrl;
+        }
         source.type = 'video/mp4';
         source.className = "mp4source";
         vid.appendChild(source);
@@ -227,7 +241,11 @@ var gfyObject = function (gfyElem) {
     function createGifTag() {
         gif = document.createElement('img');
         gif.className = "gif";
-        gif.src = opt.optimize ? '' : gfyItem.gifUrl;
+        if (opt.optimize) {
+          gif.src = '';
+        } else {
+          gif.src = opt.hd ? gfyItem.gifUrl : gfyItem.max5mbGif;
+        }
         if (opt.responsive) {
           gif.style.width = '100%';
           gif.style.position = 'absolute';
@@ -290,8 +308,10 @@ var gfyObject = function (gfyElem) {
 
     /**
     * @param {?Object} newData - can be passed to re-initialize gfy element
+    * @returns {Promise}
     */
     function init(newData) {
+      var p = new Promise(function (resolve, reject) {
         var currGfyId = gfyId;
         initData(newData);
 
@@ -301,24 +321,39 @@ var gfyObject = function (gfyElem) {
         try {
           if (!gfyId) throw new Error("Gfyid is required!");
         } catch (err) {
+          reject();
           console.log(err);
           return;
         }
 
         if (!currGfyId || currGfyId !== gfyId) {
           var newElem = document.createElement('div');
-          attrib_src = gfyRootElem.attributes;
-          attrib_dest = newElem.attributes;
+          var attrib_src = gfyRootElem.attributes;
+          var attrib_dest = newElem.attributes;
+          var classList = gfyRootElem.className;
+          var indexOfClassname = classList.indexOf(classname);
+          if (indexOfClassname > -1) {
+            if (indexOfClassname === 0) {
+              classList = classList.replace(classname, "").trim();
+            } else {
+              classList = classList.replace(" " + classname, "");
+            }
+          }
+
           for (var i = 0; i < attrib_src.length; i++) {
-              var tst = attrib_src.item(i);
-              var tst2 = tst.cloneNode();
-              if (tst2.name == "style" && tst.value != 'null') {
-                  attrib_dest.setNamedItem(tst2);
-              }
-              //attrib_dest.setNamedItem(attrib_src.item(i).cloneNode());
+            var tst = attrib_src.item(i);
+            var tst2 = tst.cloneNode();
+            if (tst2.name == "style" && tst.value != 'null') {
+              attrib_dest.setNamedItem(tst2);
+            }
+            //attrib_dest.setNamedItem(attrib_src.item(i).cloneNode());
           }
           gfyRootElem.parentNode.replaceChild(newElem, gfyRootElem);
           gfyRootElem = newElem;
+          if (classList) {
+            gfyRootElem.className = classList;
+          }
+
           gfyRootElem.style.position = "relative";
           gfyRootElem.style.padding = 0;
           gfyRootElem.style.fontSize = 0;
@@ -326,15 +361,22 @@ var gfyObject = function (gfyElem) {
 
           // call gfycat API to get info for this gfycat
           loadJSONP("https://gfycat.com/cajax/get/" + gfyId, function (data) {
-              if (data) {
-                  gfyItem = data.gfyItem;
-                  createGfyContent();
-              }
+            if (data) {
+              gfyItem = data.gfyItem;
+              createGfyContent();
+              resolve();
+            } else {
+              reject();
+            }
           });
         } else {
           gfyRootElem.innerHTML = "";
           createGfyContent();
+          resolve();
         }
+      });
+
+      return p;
     }
 
     function createGfyContent() {
@@ -416,11 +458,21 @@ var gfyObject = function (gfyElem) {
     function initData(newData) {
       initOptions();
       if (!optDataset) optDataset = gfyRootElem.dataset;
+
       if (newData && newData.id) {
         gfyId = newData.id;
       } else if (!gfyId) {
         gfyId = optDataset.id;
       }
+
+      if (newData && newData.playbackSpeed) {
+        playbackSpeed = newData.playbackSpeed;
+      } else if (!playbackSpeed) {
+        playbackSpeed = optDataset.playbackSpeed;
+      }
+
+      if (playbackSpeed && playbackSpeed > 8) playbackSpeed = 8;
+      if (playbackSpeed && playbackSpeed < 0.125) playbackSpeed = 0.125;
 
       /**
       * Option 'expand' is deprecated.
@@ -446,8 +498,8 @@ var gfyObject = function (gfyElem) {
       updateOption("autoplay", "false", newData);
       updateOption("optimize", "false", newData);
       updateOption("gif", "true", newData);
-
       updateOption("responsive", "true", newData);
+      updateOption("hd", "false", newData);
 
       if (opt.responsive) {
         if (newData && newData.hasOwnProperty('maxHeight')) {
@@ -513,7 +565,7 @@ var gfyObject = function (gfyElem) {
         var checkInView = isElementInViewport(gif);
         if (checkInView && !inView) {
             if (!gif.src || gif.src === window.location.href) {
-                gif.src = gfyItem.gifUrl;
+              gif.src = opt.hd ? gfyItem.gifUrl : gfyItem.max5mbGif;
             }
             inView = true;
         }
