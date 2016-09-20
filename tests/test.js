@@ -49,7 +49,7 @@ function createGfyHtmlElement(className, id, data) {
  * Creates and initializes gfyObject instance
  * @param {Element} gfyElem
  * @param {Object} newData
- * @returns {Promise, Element} {initPromise, gfyRootElement}
+ * @returns {Promise, Object, Element} {initPromise, newGfyObject, gfyRootElement}
  */
 function initGfyObject(gfyElem, newData) {
   var newGfyObject = new gfyObject(gfyElem),
@@ -304,6 +304,56 @@ describe("Asynchronous tests:", function() {
       done();
     });
   });
+
+  it("data-hd=false && video", function(done) {
+    var data = {
+      hd: false,
+      optimize: false
+    };
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+      gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
+      var gifElem = gfyRootElement.getElementsByClassName('gif')[0];
+      var videoElem = gfyRootElement.getElementsByTagName('video')[0];
+
+      if (gifElem) {
+        expect(gifElem.src.indexOf('restricted')).toBeGreaterThan(-1);
+        done();
+      } else if (videoElem) {
+        var videoSrc = videoElem.getElementsByClassName('mp4source')[0];
+        expect(videoSrc).toBeDefined();
+        expect(videoSrc.src.indexOf('mobile')).toBeGreaterThan(-1);
+        done();
+      }
+    });
+  });
+
+  it("data-hd=false && gif", function(done) {
+    var data = {
+      gif: true,
+      hd: false,
+      optimize: false
+    };
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+      gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
+      var gifElem = gfyRootElement.getElementsByClassName('gif')[0];
+      var videoElem = gfyRootElement.getElementsByTagName('video')[0];
+
+      if (gifElem) {
+        expect(gifElem.src.indexOf('restricted')).toBeGreaterThan(-1);
+        done();
+      } else if (videoElem) {
+        var videoSrc = videoElem.getElementsByClassName('mp4source')[0];
+        expect(videoSrc).toBeDefined();
+        expect(videoSrc.src.indexOf('mobile')).toBeGreaterThan(-1);
+        done();
+      }
+    });
   });
 
   it("Paused controls", function(done) {

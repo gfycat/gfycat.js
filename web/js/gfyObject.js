@@ -57,7 +57,8 @@ var gfyObject = function (gfyElem) {
         autoplay: true, // Option: automatically play video when loaded
         optimize: true, // Option: play video only when in viewport and lazy load for .gif
         gif: false, // Option: gif is loaded instead of video
-        responsive: false // Option: element takes 100% width of a container
+        responsive: false, // Option: element takes 100% width of a container
+        hd: true // Option: load high quality video
       };
     }
 
@@ -209,7 +210,11 @@ var gfyObject = function (gfyElem) {
         source2.className = "webmsource";
         vid.appendChild(source2);
         source = document.createElement('source');
-        source.src = gfyItem.mp4Url;
+        if (opt.hd)  {
+          source.src = gfyItem.mp4Url;
+        } else {
+          source.src = gfyItem.mobileUrl;
+        }
         source.type = 'video/mp4';
         source.className = "mp4source";
         vid.appendChild(source);
@@ -227,7 +232,11 @@ var gfyObject = function (gfyElem) {
     function createGifTag() {
         gif = document.createElement('img');
         gif.className = "gif";
-        gif.src = opt.optimize ? '' : gfyItem.gifUrl;
+        if (opt.optimize) {
+          gif.src = '';
+        } else {
+          gif.src = opt.hd ? gfyItem.gifUrl : gfyItem.max5mbGif;
+        }
         if (opt.responsive) {
           gif.style.width = '100%';
           gif.style.position = 'absolute';
@@ -456,8 +465,8 @@ var gfyObject = function (gfyElem) {
       updateOption("autoplay", "false", newData);
       updateOption("optimize", "false", newData);
       updateOption("gif", "true", newData);
-
       updateOption("responsive", "true", newData);
+      updateOption("hd", "false", newData);
 
       if (opt.responsive) {
         if (newData && newData.hasOwnProperty('maxHeight')) {
@@ -523,7 +532,7 @@ var gfyObject = function (gfyElem) {
         var checkInView = isElementInViewport(gif);
         if (checkInView && !inView) {
             if (!gif.src || gif.src === window.location.href) {
-                gif.src = gfyItem.gifUrl;
+              gif.src = opt.hd ? gfyItem.gifUrl : gfyItem.max5mbGif;
             }
             inView = true;
         }

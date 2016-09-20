@@ -52,6 +52,7 @@ Example:
 * `data-max-height` (works **only** together with `data-responsive=true`): set height upper bound for a responsive video
 * `data-optimize`: play videos when they're 50% visible, and lazy loads gifs (default: true)
 * `data-gif`: load .gif file instead of video (default: false)
+* `data-hd`: load high quality video (default: true)
 
 ###Source code
 
