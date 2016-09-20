@@ -27,13 +27,13 @@ var mobile = mobilecheck();
 
 /**
  * Creates new HTML element for gfyitem
- * @param {String} className - class to search on a page
+ * @param {String} classList
  * @param {String} id - gfy id
  * @param {?Object} data - options
  */
-function createGfyHtmlElement(className, id, data) {
+function createGfyHtmlElement(classList, id, data) {
   var gfyElem = document.createElement('div');
-  gfyElem.className = className;
+  gfyElem.className = classList;
   if (id) gfyElem.dataset.id = id;
   if (data) {
     var options = Object.keys(data);
@@ -49,10 +49,12 @@ function createGfyHtmlElement(className, id, data) {
  * Creates and initializes gfyObject instance
  * @param {Element} gfyElem
  * @param {Object} newData
+ * @param {String} className - class for initialization
  * @returns {Promise, Object, Element} {initPromise, newGfyObject, gfyRootElement}
  */
-function initGfyObject(gfyElem, newData) {
-  var newGfyObject = new gfyObject(gfyElem),
+function initGfyObject(gfyElem, newData, className) {
+  var initClass = className ? className : 'gfyitem',
+      newGfyObject = new gfyObject(gfyElem, initClass),
       initPromise;
   if (newData) {
     initPromise = newGfyObject.init(newData);
@@ -70,12 +72,14 @@ function initGfyObject(gfyElem, newData) {
  * Creates new gfy test element
  * @param {String} gfyName
  * @param {Object} initData
+ * @param {?String} classList
  * @returns {Promise, Element} {initPromise: *, gfyRootElement: *}
  */
-function createGfyObject(gfyName, initData) {
-  body.appendChild(createGfyHtmlElement('gfyitem', gfyName, initData));
+function createGfyObject(gfyName, initData, classList) {
+  var gfyClassList = classList ? classList : 'gfyitem';
+  body.appendChild(createGfyHtmlElement(gfyClassList, gfyName, initData));
   var gfyTestItem = document.getElementsByClassName('gfyitem')[0];
-  return initGfyObject(gfyTestItem, initData);
+  return initGfyObject(gfyTestItem, initData, 'gfyitem');
 }
 
 describe('gfyEmbed:', function() {
@@ -442,6 +446,36 @@ describe("Asynchronous tests:", function() {
         expect(gfyCtrlFaster.style.backgroundPosition).toEqual("-20px 0px");
         done();
       }, 100);
+    });
+  });
+
+  it("More classes, gfyitem in the beginning", function(done) {
+    var obj = createGfyObject('ReliableSparklingArcherfish', {}, "gfyitem testclass1"),
+      gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
+      expect(gfyRootElement.className).toEqual("testclass1");
+      done();
+    });
+  });
+
+  it("More classes, gfyitem in the middle", function(done) {
+    var obj = createGfyObject('ReliableSparklingArcherfish', {}, "testclass1 gfyitem testclass2"),
+      gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
+      expect(gfyRootElement.className).toEqual("testclass1 testclass2");
+      done();
+    });
+  });
+
+  it("More classes, gfyitem in the end", function(done) {
+    var obj = createGfyObject('ReliableSparklingArcherfish', {}, "testclass1 gfyitem"),
+      gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
+      expect(gfyRootElement.className).toEqual("testclass1");
+      done();
     });
   });
 

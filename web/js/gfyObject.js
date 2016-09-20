@@ -21,8 +21,11 @@
  * creates all video/control elements
  * and is self-contained with all functions
  * for interacting with its own gfycat video.
+ *
+ * @param {Element} gfyElem - root element
+ * @param {String} classname - init class name
  */
-var gfyObject = function (gfyElem) {
+var gfyObject = function (gfyElem, classname) {
     var gfyRootElem = gfyElem;
     var gfyId;
     var playbackSpeed;
@@ -322,8 +325,18 @@ var gfyObject = function (gfyElem) {
 
         if (!currGfyId || currGfyId !== gfyId) {
           var newElem = document.createElement('div');
-          attrib_src = gfyRootElem.attributes;
-          attrib_dest = newElem.attributes;
+          var attrib_src = gfyRootElem.attributes;
+          var attrib_dest = newElem.attributes;
+          var classList = gfyRootElem.className;
+          var indexOfClassname = classList.indexOf(classname);
+          if (indexOfClassname > -1) {
+            if (indexOfClassname === 0) {
+              classList = classList.replace(classname, "").trim();
+            } else {
+              classList = classList.replace(" " + classname, "");
+            }
+          }
+
           for (var i = 0; i < attrib_src.length; i++) {
             var tst = attrib_src.item(i);
             var tst2 = tst.cloneNode();
@@ -334,6 +347,10 @@ var gfyObject = function (gfyElem) {
           }
           gfyRootElem.parentNode.replaceChild(newElem, gfyRootElem);
           gfyRootElem = newElem;
+          if (classList) {
+            gfyRootElem.className = classList;
+          }
+
           gfyRootElem.style.position = "relative";
           gfyRootElem.style.padding = 0;
           gfyRootElem.style.fontSize = 0;
