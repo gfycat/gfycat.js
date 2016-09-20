@@ -21,7 +21,8 @@ limitations under the License.
 
 - 0.1: Initial revision
 - 1.0: Fixes to initialization, cleaned up UI, support for mobile browsers
-- 1.1: Support for autoplaying looping MP4 on iOS 10, GIF view count analytics 
+- 1.1: Support for autoplaying looping MP4 on iOS 10, GIF view count analytics
+- 1.2: New options: data-hd, data-playback-speed; Custom classes can be added to root element before init
 
 
 Embed script to generate gfycat embeds on 3rd party websites.
