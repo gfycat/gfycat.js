@@ -290,8 +290,10 @@ var gfyObject = function (gfyElem) {
 
     /**
     * @param {?Object} newData - can be passed to re-initialize gfy element
+    * @returns {Promise}
     */
     function init(newData) {
+      var p = new Promise(function (resolve, reject) {
         var currGfyId = gfyId;
         initData(newData);
 
@@ -301,6 +303,7 @@ var gfyObject = function (gfyElem) {
         try {
           if (!gfyId) throw new Error("Gfyid is required!");
         } catch (err) {
+          reject();
           console.log(err);
           return;
         }
@@ -310,12 +313,12 @@ var gfyObject = function (gfyElem) {
           attrib_src = gfyRootElem.attributes;
           attrib_dest = newElem.attributes;
           for (var i = 0; i < attrib_src.length; i++) {
-              var tst = attrib_src.item(i);
-              var tst2 = tst.cloneNode();
-              if (tst2.name == "style" && tst.value != 'null') {
-                  attrib_dest.setNamedItem(tst2);
-              }
-              //attrib_dest.setNamedItem(attrib_src.item(i).cloneNode());
+            var tst = attrib_src.item(i);
+            var tst2 = tst.cloneNode();
+            if (tst2.name == "style" && tst.value != 'null') {
+              attrib_dest.setNamedItem(tst2);
+            }
+            //attrib_dest.setNamedItem(attrib_src.item(i).cloneNode());
           }
           gfyRootElem.parentNode.replaceChild(newElem, gfyRootElem);
           gfyRootElem = newElem;
@@ -326,15 +329,22 @@ var gfyObject = function (gfyElem) {
 
           // call gfycat API to get info for this gfycat
           loadJSONP("https://gfycat.com/cajax/get/" + gfyId, function (data) {
-              if (data) {
-                  gfyItem = data.gfyItem;
-                  createGfyContent();
-              }
+            if (data) {
+              gfyItem = data.gfyItem;
+              createGfyContent();
+              resolve();
+            } else {
+              reject();
+            }
           });
         } else {
           gfyRootElem.innerHTML = "";
           createGfyContent();
+          resolve();
         }
+      });
+
+      return p;
     }
 
     function createGfyContent() {

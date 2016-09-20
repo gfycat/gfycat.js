@@ -26,10 +26,11 @@ function mobilecheck() {
 var mobile = mobilecheck();
 
 /**
-* @param {String} className - class to search on a page
-* @param {String} id - gfy id
-* @param {?Object} data - options
-*/
+ * Creates new HTML element for gfyitem
+ * @param {String} className - class to search on a page
+ * @param {String} id - gfy id
+ * @param {?Object} data - options
+ */
 function createGfyHtmlElement(className, id, data) {
   var gfyElem = document.createElement('div');
   gfyElem.className = className;
@@ -44,14 +45,37 @@ function createGfyHtmlElement(className, id, data) {
   return gfyElem;
 }
 
+/**
+ * Creates and initializes gfyObject instance
+ * @param {Element} gfyElem
+ * @param {Object} newData
+ * @returns {Promise, Element} {initPromise, gfyRootElement}
+ */
 function initGfyObject(gfyElem, newData) {
-  var newGfyObject = new gfyObject(gfyElem);
+  var newGfyObject = new gfyObject(gfyElem),
+      initPromise;
   if (newData) {
-    newGfyObject.init(newData);
+    initPromise = newGfyObject.init(newData);
   } else {
-    newGfyObject.init();
+    initPromise = newGfyObject.init();
   }
-  return newGfyObject;
+  return {
+    'initPromise': initPromise,
+    'newGfyObject': newGfyObject,
+    'gfyRootElement': newGfyObject.getRootElement()
+  };
+}
+
+/**
+ * Creates new gfy test element
+ * @param {String} gfyName
+ * @param {Object} initData
+ * @returns {Promise, Element} {initPromise: *, gfyRootElement: *}
+ */
+function createGfyObject(gfyName, initData) {
+  body.appendChild(createGfyHtmlElement('gfyitem', gfyName, initData));
+  var gfyTestItem = document.getElementsByClassName('gfyitem')[0];
+  return initGfyObject(gfyTestItem, initData);
 }
 
 describe('gfyEmbed:', function() {
@@ -77,30 +101,18 @@ describe('gfyEmbed:', function() {
   });
 
   it('data-id missing', function() {
-    body.appendChild(createGfyHtmlElement("gfyitem"));
-    var gfyTest = document.getElementsByClassName("gfyitem")[0];
-    var newGfyObject = initGfyObject(gfyTest);
-    expect(newGfyObject.getRootElement().innerHTML).toEqual("");
-    body.removeChild(gfyTest);
+    var gfyRootElement = createGfyObject().gfyRootElement;
+    expect(gfyRootElement.innerHTML).toEqual("");
+    body.removeChild(gfyRootElement);
   });
 });
 
 describe("Asynchronous tests:", function() {
-  beforeEach(function(done) {
-    setTimeout(function() {
-      done();
-    }, 1);
-  });
-
-  var dataLoadTimeout = 1000;
-
   it("Default", function(done) {
-    body.appendChild(createGfyHtmlElement(
-      'gfyitem', 'ReliableSparklingArcherfish'));
-    var gfyRootElement = document.getElementsByClassName('gfyitem')[0];
-    var newGfyObject = initGfyObject(gfyRootElement);
-    setTimeout(function() {
-      gfyRootElement = newGfyObject.getRootElement();
+    var obj = createGfyObject('ReliableSparklingArcherfish'),
+        gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
       var videoElem = gfyRootElement.getElementsByTagName('video')[0];
       var gifElem = gfyRootElement.getElementsByTagName('img')[0];
       // One of them should exist
@@ -114,7 +126,7 @@ describe("Asynchronous tests:", function() {
         expect(playButton).toBeDefined();
       }
       done();
-    }, dataLoadTimeout);
+    });
   });
 
   it("Reinit with new id", function(done) {
@@ -130,24 +142,32 @@ describe("Asynchronous tests:", function() {
     reinitTest(done, {id: 'ReliableSparklingArcherfish'}, {gif: true});
   });
 
+  /**
+   * Runs init and then reinit with new data
+   * @param {Function} done
+   * @param {Object} initData
+   * @param {Object} newData
+   */
   function reinitTest(done, initData, newData) {
-    body.appendChild(createGfyHtmlElement(
-      'gfyitem', initData.id));
-    var gfyRootElement = document.getElementsByClassName('gfyitem')[0];
-    var newGfyObject = initGfyObject(gfyRootElement);
-    setTimeout(function() {
-      gfyRootElement = newGfyObject.getRootElement();
-      gfyDataTest(gfyRootElement, initData);
+    var obj = createGfyObject(initData.id),
+        gfyRootElement = obj.gfyRootElement,
+        newGfyObject = obj.newGfyObject;
 
-      newGfyObject.init(newData);
-      setTimeout(function() {
+    obj.initPromise.then(function() {
+      gfyDataTest(gfyRootElement, initData);
+      newGfyObject.init(newData).then(function() {
         gfyRootElement = newGfyObject.getRootElement();
         gfyDataTest(gfyRootElement, newData);
         done();
-      }, dataLoadTimeout);
-    }, dataLoadTimeout);
+      });
+    });
   }
 
+  /**
+   * Tests if object has all the correct options after reinit with new data
+   * @param {Element} gfyRootElement
+   * @param {Object} data
+   */
   function gfyDataTest(gfyRootElement, data) {
     var videoElem = gfyRootElement.getElementsByTagName('video')[0];
     var gifElem = gfyRootElement.getElementsByClassName('gif')[0];
@@ -203,28 +223,26 @@ describe("Asynchronous tests:", function() {
     var data = {
       autoplay: false
     };
-    body.appendChild(createGfyHtmlElement(
-      'gfyitem', 'ReliableSparklingArcherfish', data));
-    var gfyRootElement = document.getElementsByClassName('gfyitem')[0];
-    var newGfyObject = initGfyObject(gfyRootElement);
-    setTimeout(function() {
-      gfyRootElement = newGfyObject.getRootElement();
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+        gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
       var videoElem = gfyRootElement.getElementsByTagName('video')[0];
       if (videoElem) expect(videoElem.autoplay).toBeFalsy();
       done();
-    }, dataLoadTimeout);
+    });
   });
 
   it("data-controls=true", function(done) {
     var data = {
       controls: true
     };
-    body.appendChild(createGfyHtmlElement(
-      'gfyitem', 'ReliableSparklingArcherfish', data));
-    var gfyRootElement = document.getElementsByClassName('gfyitem')[0];
-    var newGfyObject = initGfyObject(gfyRootElement);
-    setTimeout(function() {
-      gfyRootElement = newGfyObject.getRootElement();
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+        gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
       expect(gfyRootElement.getElementsByClassName('controls')[0]).toBeDefined();
       expect(gfyRootElement.getElementsByClassName('gfyCtrlPause')[0]).toBeDefined();
       expect(gfyRootElement.getElementsByClassName('gfyCtrlReverse')[0]).toBeDefined();
@@ -232,19 +250,18 @@ describe("Asynchronous tests:", function() {
       expect(gfyRootElement.getElementsByClassName('gfyCtrlFaster')[0]).toBeDefined();
       expect(gfyRootElement.getElementsByClassName('play-button')[0]).toBeUndefined();
       done();
-    }, dataLoadTimeout);
+    });
   });
 
   it("data-title=true", function(done) {
     var data = {
       title: true
     };
-    body.appendChild(createGfyHtmlElement(
-      'gfyitem', 'ReliableSparklingArcherfish', data));
-    var gfyRootElement = document.getElementsByClassName('gfyitem')[0];
-    var newGfyObject = initGfyObject(gfyRootElement);
-    setTimeout(function() {
-      gfyRootElement = newGfyObject.getRootElement();
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+        gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
       var titleElem = gfyRootElement.getElementsByClassName('title')[0];
       if (mobile) {
         expect(titleElem).toBeUndefined();
@@ -253,41 +270,40 @@ describe("Asynchronous tests:", function() {
       }
       expect(gfyRootElement.getElementsByClassName('overlay')[0]).toBeDefined();
       done();
-    }, dataLoadTimeout);
+    });
   });
 
   it("data-title=false", function(done) {
     var data = {
       title: false
     };
-    body.appendChild(createGfyHtmlElement(
-      'gfyitem', 'ReliableSparklingArcherfish', data));
-    var gfyRootElement = document.getElementsByClassName('gfyitem')[0];
-    var newGfyObject = initGfyObject(gfyRootElement);
-    setTimeout(function() {
-      gfyRootElement = newGfyObject.getRootElement();
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+        gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
       expect(gfyRootElement.getElementsByClassName('title')[0]).toBeUndefined();
       done();
-    }, dataLoadTimeout);
+    });
   });
 
   it("data-gif=true", function(done) {
     var data = {
       gif: true
     };
-    body.appendChild(createGfyHtmlElement(
-      'gfyitem', 'ReliableSparklingArcherfish', data));
-    var gfyRootElement = document.getElementsByClassName('gfyitem')[0];
-    var newGfyObject = initGfyObject(gfyRootElement);
-    setTimeout(function() {
-      gfyRootElement = newGfyObject.getRootElement();
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+        gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
       var gif = gfyRootElement.getElementsByClassName('gif')[0];
       expect(gif).toBeDefined();
       expect(gif.tagName).toEqual('IMG');
       expect(gfyRootElement.getElementsByClassName('controls')[0]).toBeUndefined();
       expect(gfyRootElement.getElementsByClassName('play-button')[0]).toBeUndefined();
       done();
-    }, dataLoadTimeout);
+    });
+  });
   });
 
   it("Paused controls", function(done) {
@@ -296,12 +312,11 @@ describe("Asynchronous tests:", function() {
       controls: true,
       optimize: false // video should be there
     };
-    body.appendChild(createGfyHtmlElement(
-      'gfyitem', 'ReliableSparklingArcherfish', data));
-    var gfyRootElement = document.getElementsByClassName('gfyitem')[0];
-    var newGfyObject = initGfyObject(gfyRootElement);
-    setTimeout(function() {
-      gfyRootElement = newGfyObject.getRootElement();
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+        gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
       var gfyCtrlPause = gfyRootElement.getElementsByClassName('gfyCtrlPause')[0];
       var gfyCtrlSlower = gfyRootElement.getElementsByClassName('gfyCtrlSlower')[0];
       var gfyCtrlFaster = gfyRootElement.getElementsByClassName('gfyCtrlFaster')[0];
@@ -309,7 +324,7 @@ describe("Asynchronous tests:", function() {
       expect(gfyCtrlSlower.style.backgroundPosition).toEqual("0px 0px");
       expect(gfyCtrlFaster.style.backgroundPosition).toEqual("-192px 0px");
       done();
-    }, dataLoadTimeout);
+    });
   });
 
   it("Playing controls", function(done) {
@@ -318,20 +333,21 @@ describe("Asynchronous tests:", function() {
       controls: true,
       optimize: false // video should be playing
     };
-    body.appendChild(createGfyHtmlElement(
-      'gfyitem', 'ReliableSparklingArcherfish', data));
-    var gfyRootElement = document.getElementsByClassName('gfyitem')[0];
-    var newGfyObject = initGfyObject(gfyRootElement);
-    setTimeout(function() {
-      gfyRootElement = newGfyObject.getRootElement();
-      var gfyCtrlPause = gfyRootElement.getElementsByClassName('gfyCtrlPause')[0];
-      var gfyCtrlSlower = gfyRootElement.getElementsByClassName('gfyCtrlSlower')[0];
-      var gfyCtrlFaster = gfyRootElement.getElementsByClassName('gfyCtrlFaster')[0];
-      expect(gfyCtrlPause.style.backgroundPosition).toEqual("-95px 0px");
-      expect(gfyCtrlSlower.style.backgroundPosition).toEqual("-165px 0px");
-      expect(gfyCtrlFaster.style.backgroundPosition).toEqual("-20px 0px");
-      done();
-    }, dataLoadTimeout);
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+        gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
+      setTimeout(function() {
+        var gfyCtrlPause = gfyRootElement.getElementsByClassName('gfyCtrlPause')[0];
+        var gfyCtrlSlower = gfyRootElement.getElementsByClassName('gfyCtrlSlower')[0];
+        var gfyCtrlFaster = gfyRootElement.getElementsByClassName('gfyCtrlFaster')[0];
+        expect(gfyCtrlPause.style.backgroundPosition).toEqual("-95px 0px");
+        expect(gfyCtrlSlower.style.backgroundPosition).toEqual("-165px 0px");
+        expect(gfyCtrlFaster.style.backgroundPosition).toEqual("-20px 0px");
+        done();
+      }, 100);
+    });
   });
 
   /**
@@ -342,7 +358,7 @@ describe("Asynchronous tests:", function() {
     var data = {
       expand: true
     };
-    responsiveTest(data, done, dataLoadTimeout);
+    responsiveTest(data, done);
   });
 
   it("data-expand=true && data-responsive=true", function(done) {
@@ -350,7 +366,7 @@ describe("Asynchronous tests:", function() {
       expand: true,
       responsive: true
     };
-    responsiveTest(data, done, dataLoadTimeout);
+    responsiveTest(data, done);
   });
 
   it("data-expand=false && data-responsive=true", function(done) {
@@ -358,7 +374,7 @@ describe("Asynchronous tests:", function() {
       expand: false,
       responsive: true
     };
-    responsiveTest(data, done, dataLoadTimeout);
+    responsiveTest(data, done);
   });
 
   it("data-expand=true && data-responsive=false", function(done) {
@@ -366,14 +382,14 @@ describe("Asynchronous tests:", function() {
       expand: true,
       responsive: false
     };
-    responsiveTest(data, done, dataLoadTimeout);
+    responsiveTest(data, done);
   });
 
   it("data-responsive=true", function(done) {
     var data = {
       responsive: true
     };
-    responsiveTest(data, done, dataLoadTimeout);
+    responsiveTest(data, done);
   });
 
   it("data-responsive=true && data-gif=true", function(done) {
@@ -381,7 +397,7 @@ describe("Asynchronous tests:", function() {
       gif: true,
       responsive: true
     };
-    responsiveTest(data, done, dataLoadTimeout);
+    responsiveTest(data, done);
   });
 
   it("data-responsive=true && data-max-height=400", function(done) {
@@ -389,15 +405,14 @@ describe("Asynchronous tests:", function() {
       responsive: true,
       maxHeight: 400
     };
-    body.appendChild(createGfyHtmlElement(
-      'gfyitem', 'ReliableSparklingArcherfish', data));
-    var gfyRootElement = document.getElementsByClassName('gfyitem')[0];
-    var newGfyObject = initGfyObject(gfyRootElement);
-    setTimeout(function() {
-      gfyRootElement = newGfyObject.getRootElement();
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+        gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
       expect(gfyRootElement.style.maxWidth).not.toEqual('');
       done();
-    }, dataLoadTimeout);
+    });
   });
 
   it("data-responsive=true && data-max-height=400", function(done) {
@@ -405,25 +420,27 @@ describe("Asynchronous tests:", function() {
       responsive: false,
       maxHeight: 400
     };
-    body.appendChild(createGfyHtmlElement(
-      'gfyitem', 'ReliableSparklingArcherfish', data));
-    var gfyRootElement = document.getElementsByClassName('gfyitem')[0];
-    var newGfyObject = initGfyObject(gfyRootElement);
-    setTimeout(function() {
-      gfyRootElement = newGfyObject.getRootElement();
+
+    var obj = createGfyObject('ReliableSparklingArcherfish', data),
+        gfyRootElement = obj.gfyRootElement;
+
+    obj.initPromise.then(function() {
       expect(gfyRootElement.style.maxWidth).toEqual('');
       done();
-    }, dataLoadTimeout);
+    });
   });
 });
 
-function responsiveTest(data, done, dataLoadTimeout) {
-  body.appendChild(createGfyHtmlElement(
-    'gfyitem', 'ReliableSparklingArcherfish', data));
-  var gfyRootElement = document.getElementsByClassName('gfyitem')[0];
-  var newGfyObject = initGfyObject(gfyRootElement);
-  setTimeout(function() {
-    gfyRootElement = newGfyObject.getRootElement();
+/**
+ * Tests responsive gfy item
+ * @param {Object} data
+ * @param {Function} done
+ */
+function responsiveTest(data, done) {
+  var obj = createGfyObject('ReliableSparklingArcherfish', data),
+      gfyRootElement = obj.gfyRootElement;
+
+  obj.initPromise.then(function() {
     var gifElem = gfyRootElement.getElementsByClassName('gif')[0];
     if (gifElem) {
       expect(gifElem.style.width).toEqual("100%");
@@ -435,5 +452,5 @@ function responsiveTest(data, done, dataLoadTimeout) {
       expect(sizer).toBeDefined();
     }
     done();
-  }, dataLoadTimeout);
+  });
 }
