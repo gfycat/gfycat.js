@@ -210,11 +210,14 @@ var gfyObject = function (gfyElem, classname) {
 
     function setVideoSources() {
       if (vid && !isVideoSourcesSet) {
-        source2 = document.createElement('source');
-        source2.src = gfyItem.webmUrl;
-        source2.type = 'video/webm';
-        source2.className = "webmsource";
-        vid.appendChild(source2);
+        if (opt.hd) {
+          source2 = document.createElement('source');
+          source2.src = gfyItem.webmUrl;
+          source2.type = 'video/webm';
+          source2.className = "webmsource";
+          vid.appendChild(source2);
+        }
+
         source = document.createElement('source');
         if (opt.hd)  {
           source.src = gfyItem.mp4Url;
