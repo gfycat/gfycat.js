@@ -33,9 +33,17 @@ This code is provided on Github, so users can request changes, contribute code, 
 
 ###Usage:  
 
-**Include this script on your website**
+**Include this script on your webpage right after the opening \<body\> tag**
 
-      <script type="text/javascript" src="https://assets.gfycat.com/gfycat.js"></script>
+      <script>
+          (function(d, s, id){
+             var js, fjs = d.getElementsByTagName(s)[0];
+             if (d.getElementById(id)) {return;}
+             js = d.createElement(s); js.id = id;
+             js.src = "https://assets.gfycat.com/gfycat.js";
+             fjs.parentNode.insertBefore(js, fjs);
+           }(document, 'script', 'gfycat-js'));
+      </script>
 
 **Include an embed tag(s)**
 
@@ -60,16 +68,10 @@ Example:
 
 The code is broken down into two files:
 
-* **gfyCollection.js**: `gfyCollection` calls `gfyCollection.init()` on page load.  Its function is to find every Gfycat embed on the page and create a gfyObject for it.
-* **gfyObject.js**:  a `new gfyObject` instance is created for each gfycat embed.  It contains all of the functions to generate the DOM and manipulate the video.  
+* **gfyCollection.js**: `gfyCollection` calls `gfyCollection.init()` after the script is loaded.  Its function is to find every Gfycat embed on the page and create a gfyObject for it.
+* **gfyObject.js**:  a `new gfyObject` instance is created for each gfycat embed.  It contains all of the functions to generate the DOM and manipulate the video.
 
-`gfyCollection.init` should be called on page load or after `gfyitem` elements appear on the page:  
-
-    if (document.addEventListener) {
-      document.addEventListener("DOMContentLoaded", gfyCollection.init, false);
-    } else {
-        document.attachEvent("onreadystatechange", gfyCollection.init);
-    }
+`gfyCollection.init` should be called on `gfyitem` elements which appear on the page after the page load.
 
 The default key the embed script looks for is `class="gfyitem"`, or the class specificed in `gfyCollection.init('classname')`.
 
