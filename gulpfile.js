@@ -24,7 +24,9 @@ var chalk = require('chalk'),
     runSequence = require('run-sequence'),
     Server = require('karma').Server;
     stylish = require('jshint-stylish'),
-    uglify = require('gulp-uglify');
+    uglify = require('gulp-uglify'),
+    gulpGlobs = require('./gulpGlobs');
+
 
 var argv = minimist(process.argv.slice(2));
 var isProductionBuild = argv.prod ? true : false;
@@ -45,7 +47,7 @@ gulp.task('lint', function() {
 });
 
 gulp.task('compress', function () {
-  gulp.src('web/js/*.js')
+  gulp.src(gulpGlobs.js)
     .pipe(concat('dev.gfycat.js'))
     .pipe(gulp.dest('dist'))
     .pipe(rename('gfycat.js'))

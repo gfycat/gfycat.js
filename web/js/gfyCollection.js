@@ -31,11 +31,11 @@
 var gfyCollection = function() {
 
     var collection = [],
-        gfyClass = "gfyitem";
+        gfyClass = "gfyitem",
+        scrollTop;
 
     // Helper function -- only required because some browsers do not have get by class name
     function byClass(className, obj) {
-
         if (obj.getElementsByClassName) {
             return obj.getElementsByClassName(className);
         } else {
@@ -49,9 +49,46 @@ var gfyCollection = function() {
     }
 
     function init(classname) {
-        if (GfyAnalytics) GfyAnalytics.initGA();
+        if (typeof GfyAnalytics !== 'undefined') GfyAnalytics.initGA();
         classname = typeof classname==="string" ? classname : gfyClass;
         scan(classname);
+        attachEventListeners();
+    }
+
+    var scrollTimer;
+
+    function scrollHandler() {
+      if (scrollTimer) {
+        clearTimeout(scrollTimer);
+      }
+      scrollTimer = setTimeout(function() {
+        scrollTop = document.body.scrollTop;
+        for (var i = 0; i < collection.length; i++) {
+          collection[i].checkScroll(scrollTop);
+        }
+      }, 100);
+    }
+
+    function onPageUpdate() {
+      scrollTop = document.body.scrollTop;
+      var windowHeight = window.innerHeight;
+      for (var i = 0; i < collection.length; i++) {
+        collection[i].onPageUpdate(windowHeight, scrollTop);
+      }
+    }
+
+    function attachEventListeners() {
+      if (window.addEventListener) {
+        addEventListener('DOMContentLoaded', onPageUpdate, false);
+        addEventListener('load', onPageUpdate, false);
+        addEventListener('resize', onPageUpdate, false);
+        addEventListener('scroll', scrollHandler, false);
+      } else if (window.attachEvent) {
+        attachEvent('DOMContentLoaded', onPageUpdate, false);
+        attachEvent('load', onPageUpdate, false);
+        attachEvent('resize', onPageUpdate, false);
+        attachEvent('scroll', scrollHandler, false);
+      }
     }
 
     function scan(classname) {
@@ -60,7 +97,7 @@ var gfyCollection = function() {
         // this can be run multiple times, so we'll add to any existing gfycats
         var last = collection.length;
         // find each gfycat on page and run its init
-        elem_coll = byClass(classname, document);
+        var elem_coll = byClass(classname, document);
         for (var i = 0; i < elem_coll.length; i++) {
             // don't need to worry about finding existing gfyitems - they are
             // replaced by gfyObject
@@ -78,17 +115,11 @@ var gfyCollection = function() {
         return collection;
     }
 
+    init();
+
     return {
         init: init,
         get: get,
         scan: scan
     };
-
 }();
-
-if (document.addEventListener)
-    document.addEventListener("DOMContentLoaded", function() {
-        gfyCollection.init();
-    }, false);
-else
-    document.attachEvent("onreadystatechange", gfyCollection.init);

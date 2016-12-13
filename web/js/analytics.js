@@ -99,7 +99,7 @@ var GfyAnalytics = function() {
     };
     xhr.send();
 
-    if (ga) {
+    if (typeof ga !== 'undefined') {
       ga('gfyTracker.send', 'pageview', location.href);
     }
   }
@@ -150,7 +150,7 @@ var GfyAnalytics = function() {
     i.src = 'https://metrics.gfycat.com/pix.gif?' + encodeParameters(kv);
 
 
-    if (ga && kv.hasOwnProperty('event')) {
+    if (typeof ga !== 'undefined' && kv.hasOwnProperty('event')) {
       ga('gfyTracker.send', 'event', 'gfyEvent', kv.event);
     }
   };
@@ -172,7 +172,7 @@ var GfyAnalytics = function() {
     i.src = 'https://metrics.gfycat.com/pix.gif?' + encodeParameters(kv);
 
 
-    if (ga && kv.hasOwnProperty('event')) {
+    if (typeof ga !== 'undefined' && kv.hasOwnProperty('event')) {
       ga('gfyTracker.send', 'event', 'gfyEvent', kv.event, {'hitCallback': callback});
     }
   };
