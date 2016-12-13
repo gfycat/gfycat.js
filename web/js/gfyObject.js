@@ -49,6 +49,12 @@ var gfyObject = function (gfyElem, classname) {
 
     var isVideoSourcesSet = false;
 
+    var gfyHeight;
+    var gfyOffset;
+    var visiblePartSize;
+    var windowHeight;
+    var documentScrollTop;
+
     var bool = {
       "true": true,
       "false": false
@@ -211,14 +217,14 @@ var gfyObject = function (gfyElem, classname) {
     function setVideoSources() {
       if (vid && !isVideoSourcesSet) {
         if (opt.hd) {
-          source2 = document.createElement('source');
+          var source2 = document.createElement('source');
           source2.src = gfyItem.webmUrl;
           source2.type = 'video/webm';
           source2.className = "webmsource";
           vid.appendChild(source2);
         }
 
-        source = document.createElement('source');
+        var source = document.createElement('source');
         if (opt.hd)  {
           source.src = gfyItem.mp4Url;
         } else {
@@ -415,7 +421,6 @@ var gfyObject = function (gfyElem, classname) {
 
           createGifTag();
           checkScrollGif();
-          watchElementInViewport(checkScrollGif);
           gif.onload = function() {
               if (!opt.title || !gfyItem.title) return;
               createTitle();
@@ -449,7 +454,6 @@ var gfyObject = function (gfyElem, classname) {
 
     function watchVideoOptimization() {
       checkScrollVideo();
-      watchElementInViewport(checkScrollVideo);
     }
 
     /**
@@ -550,7 +554,7 @@ var gfyObject = function (gfyElem, classname) {
     }
 
     function checkScrollVideo() {
-        var checkInView = isElementInViewport(vid);
+        var checkInView = isElementInViewport();
         if (checkInView && !inView) {
             setVideoSources();
             if (opt.autoplay) play();
@@ -562,7 +566,7 @@ var gfyObject = function (gfyElem, classname) {
     }
 
     function checkScrollGif() {
-        var checkInView = isElementInViewport(gif);
+        var checkInView = isElementInViewport();
         if (checkInView && !inView) {
             if (!gif.src || gif.src === window.location.href) {
               gif.src = opt.hd ? gfyItem.gifUrl : gfyItem.max5mbGif;
@@ -574,30 +578,39 @@ var gfyObject = function (gfyElem, classname) {
     /**
     * Returns 'true' if 50% of the element is in view in each direction
     */
-    function isElementInViewport(el) {
-        var rect = el.getBoundingClientRect();
-        return (
-            rect.top >= -rect.height / 2 &&
-            rect.bottom <= (window.innerHeight ||
-                document.documentElement.clientHeight) + rect.height / 2 &&
-            rect.left >= -rect.width / 2 &&
-            rect.right <= (window.innerWidth ||
-                document.documentElement.clientWidth) + rect.width / 2
-        );
+    function isElementInViewport() {
+      if (typeof documentScrollTop === 'undefined') {
+        documentScrollTop = document.body.scrollTop;
+      }
+
+      return (documentScrollTop + windowHeight >= gfyOffset + visiblePartSize &&
+        documentScrollTop <= gfyOffset + gfyHeight - visiblePartSize);
     }
 
-    function watchElementInViewport(handler) {
-        if (window.addEventListener) {
-            addEventListener('DOMContentLoaded', handler, false);
-            addEventListener('load', handler, false);
-            addEventListener('scroll', handler, false);
-            addEventListener('resize', handler, false);
-        } else if (window.attachEvent)  {
-            attachEvent('onDOMContentLoaded', handler); // IE9+ :(
-            attachEvent('onload', handler);
-            attachEvent('onscroll', handler);
-            attachEvent('onresize', handler);
-        }
+    function onPageUpdate(newWindowHeight, scrollTop) {
+      updateGfyPosition();
+      windowHeight = newWindowHeight;
+      checkScroll(scrollTop);
+    }
+
+    function checkScroll(scrollTop) {
+      if (typeof scrollTop !== 'undefined') documentScrollTop = scrollTop;
+
+      if (vid) {
+        checkScrollVideo();
+      } else if (gif) {
+        checkScrollGif();
+      }
+    }
+
+    function getWindowHeight() {
+      windowHeight = window.innerHeight;
+    }
+
+    function updateGfyPosition() {
+      gfyHeight = gfyRootElem.offsetHeight;
+      gfyOffset = gfyRootElem.offsetTop;
+      visiblePartSize = gfyHeight * 0.5;
     }
 
     function vidLoaded() {
@@ -793,6 +806,8 @@ var gfyObject = function (gfyElem, classname) {
     return {
         init: init,
         refresh: refresh,
-        getRootElement: getRootElement
+        getRootElement: getRootElement,
+        checkScroll: checkScroll,
+        onPageUpdate: onPageUpdate
     };
 };
