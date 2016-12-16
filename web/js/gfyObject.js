@@ -409,6 +409,7 @@ var gfyObject = function (gfyElem, classname) {
               watchVideoOptimization();
             }
           } else {
+            updateGfyPosition();
             setVideoSources();
             if (opt.autoplay) play();
           }
@@ -453,6 +454,7 @@ var gfyObject = function (gfyElem, classname) {
     }
 
     function watchVideoOptimization() {
+      updateGfyPosition();
       checkScrollVideo();
     }
 
@@ -588,8 +590,9 @@ var gfyObject = function (gfyElem, classname) {
     }
 
     function onPageUpdate(newWindowHeight, scrollTop) {
-      updateGfyPosition();
       windowHeight = newWindowHeight;
+      documentScrollTop = scrollTop;
+      updateGfyPosition();
       checkScroll(scrollTop);
     }
 
@@ -608,8 +611,22 @@ var gfyObject = function (gfyElem, classname) {
     }
 
     function updateGfyPosition() {
-      gfyHeight = gfyRootElem.offsetHeight;
-      gfyOffset = gfyRootElem.offsetTop;
+      var el;
+      if (vid) {
+        el = vid;
+      } else if (gif) {
+        el = gif;
+      }
+
+      if (!el) return;
+
+      var rect = el.getBoundingClientRect();
+      if (typeof documentScrollTop !== 'undefined') {
+        documentScrollTop = document.body.scrollTop;
+      }
+
+      gfyHeight = rect.height;
+      gfyOffset = rect.top + documentScrollTop;
       visiblePartSize = gfyHeight * 0.5;
     }
 

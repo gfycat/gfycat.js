@@ -123,3 +123,11 @@ var gfyCollection = function() {
         scan: scan
     };
 }();
+
+if (document.addEventListener) {
+  document.addEventListener("DOMContentLoaded", function() {
+      gfyCollection.init();
+  }, false);
+} else {
+  document.attachEvent("onreadystatechange", gfyCollection.init);
+}
