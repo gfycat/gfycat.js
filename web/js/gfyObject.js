@@ -68,7 +68,8 @@ var gfyObject = function (gfyElem, classname) {
         optimize: true, // Option: play video only when in viewport and lazy load for .gif
         gif: false, // Option: gif is loaded instead of video
         responsive: false, // Option: element takes 100% width of a container
-        hd: true // Option: load high quality video
+        hd: true, // Option: load high quality video,
+        ad: false // Option: set styles for ad
       };
     }
 
@@ -197,9 +198,12 @@ var gfyObject = function (gfyElem, classname) {
           vid.style.position = 'absolute';
           vid.style.top = '0';
           vid.style.left = '0';
+        } else if (opt.ad) {
+          vid.style.height = '100%';
         } else {
           vid.style.height = 'auto';
         }
+
         // poster url gfyName is case sensitive
         vid.setAttribute('poster', 'https://thumbs.gfycat.com/' + gfyItem.gfyName + '-poster.jpg');
         gfyRootElem.appendChild(vid);
@@ -451,6 +455,34 @@ var gfyObject = function (gfyElem, classname) {
         gfyRootElem.style.MozBoxSizing = 'border-box';
         gfyRootElem.style.webkitBoxSizing = 'border-box';
       }
+
+      if (opt.ad) {
+        gfyRootElem.style.display = 'block';
+        gfyRootElem.style.width = '100%';
+        gfyRootElem.style.height = '100%';
+        updateAdHeight();
+
+        window.addEventListener('resize', function() {
+          updateAdHeight();
+        });
+      }
+    }
+
+
+    /**
+    * Used only when ad=true (embed is used as an ad)
+    */
+    function updateAdHeight() {
+      var windowWidth = window.innerWidth;
+      var videoHeight;
+      if (windowWidth < 435) {
+        videoHeight = 118;
+      } else if (windowWidth < 750) {
+        videoHeight = 220;
+      } else {
+        videoHeight = 365;
+      }
+      gfyRootElem.style.height = videoHeight + 'px';
     }
 
     function watchVideoOptimization() {
@@ -506,6 +538,9 @@ var gfyObject = function (gfyElem, classname) {
       updateOption("gif", "true", newData);
       updateOption("responsive", "true", newData);
       updateOption("hd", "false", newData);
+      updateOption("ad", "true", newData);
+
+      if (opt.ad) opt.optimize = false;
 
       if (opt.responsive) {
         if (newData && newData.hasOwnProperty('maxHeight')) {
