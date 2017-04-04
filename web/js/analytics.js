@@ -75,13 +75,11 @@ var GfyAnalytics = function() {
   }
 
 
-  function sendViewCount(tx, data) {
-    if (navigator.doNotTrack) return;
+  function sendViewCount(gfyid, data) {
     generateUserSessionID();
 
     var _utc = encodeURIComponent(utc);
     var _stc = encodeURIComponent(stc);
-    var _tx = tx;
     var viewDataString = "";
     for (var key in data) {
       if (data[key]) {
@@ -89,7 +87,7 @@ var GfyAnalytics = function() {
       }
     }
 
-    var url = 'https://pixel.gfycat.com/pix.gif?tx=' + _tx + viewDataString +
+    var url = 'https://px.gfycat.com/pix.gif?gfyid=' + gfyid + viewDataString +
       '&utc=' + _utc + '&stc=' + _stc + '&rand=' + Math.random()*100000;
     var xhr = createCORSRequest('GET', url);
     if (!xhr) throw new Error('CORS is not supported in your browser');
@@ -134,7 +132,6 @@ var GfyAnalytics = function() {
     });
   */
   var sendEvent = function(kv) {
-    if (navigator.doNotTrack) return;
     generateUserSessionID();
 
     var ref = 'https://www.gfycat.com';
@@ -156,7 +153,6 @@ var GfyAnalytics = function() {
   };
 
   var sendEventWithCallback = function(kv, callback) {
-    if (navigator.doNotTrack) return;
     generateUserSessionID();
 
     var ref = 'https://www.gfycat.com';
