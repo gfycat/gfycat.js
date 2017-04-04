@@ -791,33 +791,20 @@ var gfyObject = function (gfyElem, classname) {
       return gfyRootElem;
     }
 
-    function sendAnalytics() {
-        var url = "https://gfycat.com/cajax/getTx/" + gfyId;
-
-        var request = new XMLHttpRequest();
-        request.open("GET", url);
-        request.send();
-
-        request.onreadystatechange = function () {
-            if (request.readyState === XMLHttpRequest.DONE && request.status === 200) {
-                if (request.response) {
-                    var response = JSON.parse(request.response);
-                    if (!response.tx) return;
-                    var ref = "";
-                    if (typeof document.referrer !== "undefined" && document.referrer) {
-                        ref = encodeURIComponent(document.referrer);
-                    } else {
-                        ref = location.href;
-                    }
-                    var data = {
-                        ref: ref,
-                        module: 'jsEmbed',
-                        device_type: isMobile ? 'mobile' : 'desktop'
-                    };
-                    GfyAnalytics.sendViewCount(response.tx, data);
-                }
-            }
+    function sendAnalytics(gfyId) {
+        var ref = "";
+        if (typeof document.referrer !== "undefined" && document.referrer) {
+            ref = encodeURIComponent(document.referrer);
+        } else {
+            ref = location.href;
+        }
+        var data = {
+            ref: ref,
+            context: 'jsEmbed',
+            device_type: isMobile ? 'mobile' : 'desktop'
         };
+
+        GfyAnalytics.sendViewCount(gfyId, data);
     }
 
     return {
