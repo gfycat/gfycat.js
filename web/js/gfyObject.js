@@ -588,10 +588,10 @@ var gfyObject = function (gfyElem, classname) {
     * Returns 'true' if 50% of the element is in view in each direction
     */
     function isElementInViewport() {
-      if (typeof documentScrollTop === 'undefined') {
-        documentScrollTop = getScrollTop();
-      }
+      documentScrollTop = getScrollTop();
 
+      console.log(documentScrollTop + windowHeight >= gfyOffset + visiblePartSize &&
+        documentScrollTop <= gfyOffset + gfyHeight - visiblePartSize);
       return (documentScrollTop + windowHeight >= gfyOffset + visiblePartSize &&
         documentScrollTop <= gfyOffset + gfyHeight - visiblePartSize);
     }
@@ -628,9 +628,7 @@ var gfyObject = function (gfyElem, classname) {
       if (!el) return;
 
       var rect = el.getBoundingClientRect();
-      if (typeof documentScrollTop !== 'undefined') {
-        documentScrollTop = getScrollTop();
-      }
+      documentScrollTop = getScrollTop();
 
       gfyHeight = rect.height;
       gfyOffset = rect.top + documentScrollTop;
