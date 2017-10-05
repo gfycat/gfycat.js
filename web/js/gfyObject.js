@@ -578,11 +578,18 @@ var gfyObject = function (gfyElem, classname) {
     }
 
     /**
+    * Returns the number of pixels scrolled from the top of the webpage
+    */
+    function getScrollTop(){
+      return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    }
+
+    /**
     * Returns 'true' if 50% of the element is in view in each direction
     */
     function isElementInViewport() {
       if (typeof documentScrollTop === 'undefined') {
-        documentScrollTop = document.body.scrollTop;
+        documentScrollTop = getScrollTop();
       }
 
       return (documentScrollTop + windowHeight >= gfyOffset + visiblePartSize &&
@@ -622,7 +629,7 @@ var gfyObject = function (gfyElem, classname) {
 
       var rect = el.getBoundingClientRect();
       if (typeof documentScrollTop !== 'undefined') {
-        documentScrollTop = document.body.scrollTop;
+        documentScrollTop = getScrollTop();
       }
 
       gfyHeight = rect.height;
