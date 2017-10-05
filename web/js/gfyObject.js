@@ -590,8 +590,6 @@ var gfyObject = function (gfyElem, classname) {
     function isElementInViewport() {
       documentScrollTop = getScrollTop();
 
-      console.log(documentScrollTop + windowHeight >= gfyOffset + visiblePartSize &&
-        documentScrollTop <= gfyOffset + gfyHeight - visiblePartSize);
       return (documentScrollTop + windowHeight >= gfyOffset + visiblePartSize &&
         documentScrollTop <= gfyOffset + gfyHeight - visiblePartSize);
     }
