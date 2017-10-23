@@ -15,9 +15,9 @@ limitations under the License.
 -->
 
 
-#gfycat.js
+# gfycat.js
 
-####Version History:
+#### Version History:
 
 - 0.1: Initial revision
 - 1.0: Fixes to initialization, cleaned up UI, support for mobile browsers
@@ -31,25 +31,29 @@ The intent of this Javascript file is to provide a simple way for web publishers
 
 This code is provided on Github, so users can request changes, contribute code, or fork a branch. Please contribute to the project to help improve it with actual real world needs.  
 
-###Usage:  
+### Usage:  
 
 **Include this script on your webpage right after the opening \<body\> tag**
 
-      <script>
-          (function(d, s, id){
-             var js, fjs = d.getElementsByTagName(s)[0];
-             if (d.getElementById(id)) {return;}
-             js = d.createElement(s); js.id = id;
-             js.src = "https://assets.gfycat.com/gfycat.js";
-             fjs.parentNode.insertBefore(js, fjs);
-           }(document, 'script', 'gfycat-js'));
-      </script>
+```html
+<script>
+    (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "https://assets.gfycat.com/gfycat.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'gfycat-js'));
+</script>
+```
 
 **Include an embed tag(s)**
 
 Example:
 
-    <div class="gfyitem" data-title=true data-autoplay=false data-controls=true data-id="BestYellowishElephantseal"></div>
+```html
+<div class="gfyitem" data-title=true data-autoplay=false data-controls=true data-id="BestYellowishElephantseal"></div>
+```
 
 **The options are:**
 * `data-id`: the Gfycat id (required)
@@ -64,7 +68,7 @@ Example:
 * `data-hd`: load high quality video (default: true)
 * `data-playback-speed`: set video playback speed, values from the interval \[0.125, 8\] (default: 1)
 
-###Source code
+### Source code
 
 The code is broken down into two files:
 
@@ -89,14 +93,14 @@ var collection = gfyCollection.get();
 collection[0].init({id: "BareSecondaryFlamingo"});
 ```
 
-###Build
+### Build
 
 ```
 npm install
 gulp build
 ```
 
-###Testing
+### Testing
 `gulp test` - runs all the tests once
 
 `gulp tdd` - watching for file changes and runs all the tests
