@@ -366,7 +366,7 @@ var gfyObject = function (gfyElem, classname) {
           sendAnalytics(gfyId);
 
           // call gfycat API to get info for this gfycat
-          loadJSONP("https://gfycat.com/cajax/get/" + gfyId, function (data) {
+          loadJSONP("https://api.gfycat.com/v1/gfycats/" + gfyId, function (data) {
             if (data) {
               gfyItem = data.gfyItem;
               createGfyContent();
