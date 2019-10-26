@@ -130,6 +130,8 @@ describe("Asynchronous tests:", function() {
         expect(playButton).toBeDefined();
       }
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -159,11 +161,13 @@ describe("Asynchronous tests:", function() {
 
     obj.initPromise.then(function() {
       gfyDataTest(gfyRootElement, initData);
-      newGfyObject.init(newData).then(function() {
-        gfyRootElement = newGfyObject.getRootElement();
-        gfyDataTest(gfyRootElement, newData);
-        done();
-      });
+      return newGfyObject.init(newData);
+    }).then(function() {
+      gfyRootElement = newGfyObject.getRootElement();
+      gfyDataTest(gfyRootElement, newData);
+      done();
+    }).catch(function(err) {
+      done(err);
     });
   }
 
@@ -235,6 +239,8 @@ describe("Asynchronous tests:", function() {
       var videoElem = gfyRootElement.getElementsByTagName('video')[0];
       if (videoElem) expect(videoElem.autoplay).toBeFalsy();
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -254,6 +260,8 @@ describe("Asynchronous tests:", function() {
       expect(gfyRootElement.getElementsByClassName('gfyCtrlFaster')[0]).toBeDefined();
       expect(gfyRootElement.getElementsByClassName('play-button')[0]).toBeUndefined();
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -274,6 +282,8 @@ describe("Asynchronous tests:", function() {
       }
       expect(gfyRootElement.getElementsByClassName('overlay')[0]).toBeDefined();
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -288,6 +298,8 @@ describe("Asynchronous tests:", function() {
     obj.initPromise.then(function() {
       expect(gfyRootElement.getElementsByClassName('title')[0]).toBeUndefined();
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -306,6 +318,8 @@ describe("Asynchronous tests:", function() {
       expect(gfyRootElement.getElementsByClassName('controls')[0]).toBeUndefined();
       expect(gfyRootElement.getElementsByClassName('play-button')[0]).toBeUndefined();
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -331,6 +345,8 @@ describe("Asynchronous tests:", function() {
         expect(videoSrc.src.indexOf('mobile')).toBeGreaterThan(-1);
         done();
       }
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -357,6 +373,8 @@ describe("Asynchronous tests:", function() {
         expect(videoSrc.src.indexOf('mobile')).toBeGreaterThan(-1);
         done();
       }
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -372,6 +390,8 @@ describe("Asynchronous tests:", function() {
       var videoElem = gfyRootElement.getElementsByTagName('video')[0];
       expect(videoElem.playbackRate).toEqual(3);
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -387,6 +407,8 @@ describe("Asynchronous tests:", function() {
       var videoElem = gfyRootElement.getElementsByTagName('video')[0];
       expect(videoElem.playbackRate).toEqual(8);
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -402,6 +424,8 @@ describe("Asynchronous tests:", function() {
       var videoElem = gfyRootElement.getElementsByTagName('video')[0];
       expect(videoElem.playbackRate).toEqual(0.125);
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -423,6 +447,8 @@ describe("Asynchronous tests:", function() {
       expect(gfyCtrlSlower.style.backgroundPosition).toEqual("0px 0px");
       expect(gfyCtrlFaster.style.backgroundPosition).toEqual("-192px 0px");
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -446,6 +472,8 @@ describe("Asynchronous tests:", function() {
         expect(gfyCtrlFaster.style.backgroundPosition).toEqual("-20px 0px");
         done();
       }, 100);
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -456,6 +484,8 @@ describe("Asynchronous tests:", function() {
     obj.initPromise.then(function() {
       expect(gfyRootElement.className).toEqual("testclass1");
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -466,6 +496,8 @@ describe("Asynchronous tests:", function() {
     obj.initPromise.then(function() {
       expect(gfyRootElement.className).toEqual("testclass1 testclass2");
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -476,6 +508,8 @@ describe("Asynchronous tests:", function() {
     obj.initPromise.then(function() {
       expect(gfyRootElement.className).toEqual("testclass1");
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -541,6 +575,8 @@ describe("Asynchronous tests:", function() {
     obj.initPromise.then(function() {
       expect(gfyRootElement.style.maxWidth).not.toEqual('');
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
@@ -556,6 +592,8 @@ describe("Asynchronous tests:", function() {
     obj.initPromise.then(function() {
       expect(gfyRootElement.style.maxWidth).toEqual('');
       done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 });
@@ -581,5 +619,7 @@ function responsiveTest(data, done) {
       expect(sizer).toBeDefined();
     }
     done();
+  }).catch(function(err) {
+    done(err);
   });
 }
