@@ -4,20 +4,19 @@ node_js:
   - 6
 
 services:
-  - xvbf
+  - xvfb
 
 before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
 
 before_script:
-  # gulpfile uses the Gulp v3 API
-  - npm install -g gulp@3.x
+  - npm install -g gulp-cli
 
 script:
   - npm install
-  - gulp build
-  - gulp test
+  - npm run build
+  - xvfb-run npm run test
 
 deploy:
   - provider: s3
