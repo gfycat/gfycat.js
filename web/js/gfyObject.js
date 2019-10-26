@@ -366,13 +366,13 @@ var gfyObject = function (gfyElem, classname) {
           sendAnalytics(gfyId);
 
           // call gfycat API to get info for this gfycat
-          loadJSONP("https://gfycat.com/cajax/get/" + gfyId, function (data) {
-            if (data) {
+          fetchData("https://api.gfycat.com/v1/gfycats/" + gfyId, function (data) {
+            if (data && data.gfyItem) {
               gfyItem = data.gfyItem;
               createGfyContent();
               resolve();
             } else {
-              reject();
+              reject(data && data.message || data);
             }
           });
         } else {
@@ -526,33 +526,34 @@ var gfyObject = function (gfyElem, classname) {
         opt[optName] = bool[nonDefaultValue];
       }
     }
+    /**
+     * used to load ajax info for each gfycat on the page
+     * callback functions must be setup and uniquely named for each
+     *
+     * @type {(<T = typeof window>(url: string, callback: (this: T, data: any) => void, context?: T) => void)}
+     *
+     * @template T
+     * @param {string} url
+     * @param {(this: T, data: any) => void} callback
+     * @param {T} [context]
+     */
+    function fetchData(url, callback, context) {
+      var request = new XMLHttpRequest();
 
-    // used to load ajax info for each gfycat on the page
-    // callback functions must be setup and uniquely named for each
-    function loadJSONP(url, callback, context) {
-        var unique = Math.floor((Math.random()*10000000) + 1);
-        // INIT
-        var name = "_" + gfyId + "_" + unique++;
-        if (url.match(/\?/)) url += "&callback=" + name;
-        else url += "?callback=" + name;
+      // INIT
+      request.open('GET', url);
 
-        // Create script
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = url;
+      // Setup handler
+      request.onreadystatechange = function (event) {
+        if (this.readyState !== XMLHttpRequest.DONE) {
+          return;
+        }
 
-        // Setup handler
-        window[name] = function (data) {
-            callback.call((context || window), data);
-            document.getElementsByTagName('head')[0].removeChild(script);
-            script = null;
-            try {
-                delete window[name];
-            } catch (e) {}
-        };
+        callback.call((context || window), this.response);
+      };
 
-        // Load JSON
-        document.getElementsByTagName('head')[0].appendChild(script);
+      // Load JSON
+      request.send();
     }
 
     function checkScrollVideo() {
