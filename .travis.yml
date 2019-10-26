@@ -1,7 +1,12 @@
 language: node_js
 
 node_js:
-  - 4.1
+  - 6
+
+# Ubuntu 14 Trusty is old, and Travis might stop supporting it at some point,
+# so we need to figure out how to get xvfb working on Ubuntu 16 and newer:
+# https://docs.travis-ci.com/user/gui-and-headless-browsers/#sts=Using%20xvfb%20to%20Run%20Tests%20That%20Require%20a%20GUI%20#
+dist: trusty
 
 before_install:
   - export CHROME_BIN=chromium-browser
@@ -9,12 +14,12 @@ before_install:
   - sh -e /etc/init.d/xvfb start
 
 before_script:
-  - npm install -g gulp
+  - npm install -g gulp-cli
 
 script:
   - npm install
-  - gulp build
-  - gulp test
+  - npm run build
+  - npm run test
 
 deploy:
   - provider: s3
